@@ -99,6 +99,10 @@ class BinanceClient:
     Supporte le mode testnet et production.
     Utilise l'API async pour de meilleures performances.
     
+    Mode hybride (recommandé pour le développement):
+    - use_production_data=True : données live de production (lecture seule)
+    - testnet reste actif pour les trades
+    
     Usage:
         client = BinanceClient()
         await client.connect()
@@ -110,11 +114,18 @@ class BinanceClient:
             price = await client.get_price("BTCUSDT")
     """
     
-    def __init__(self):
-        """Initialise le client (ne se connecte pas encore)."""
+    def __init__(self, use_production_data: bool = True):
+        """
+        Initialise le client (ne se connecte pas encore).
+        
+        Args:
+            use_production_data: Si True, utilise l'API production pour les données
+                                 même si testnet est activé (recommandé pour dev)
+        """
         self._settings = get_settings()
         self._client: Optional[AsyncClient] = None
         self._connected = False
+        self._use_production_data = use_production_data
     
     @property
     def is_connected(self) -> bool:
@@ -140,13 +151,25 @@ class BinanceClient:
         try:
             self._client = await self._create_client()
             self._connected = True
-            mode = "TESTNET" if self.is_testnet else "PRODUCTION"
+            
+            if self._use_production_data:
+                mode = "PRODUCTION (données live)"
+            elif self.is_testnet:
+                mode = "TESTNET"
+            else:
+                mode = "PRODUCTION"
+            
             logger.info(f"✅ Connecté à Binance ({mode})")
         except Exception as e:
             raise APIConnectionError(f"Impossible de se connecter à Binance: {e}")
     
     async def _create_client(self) -> AsyncClient:
         """Crée le client async Binance."""
+        # Mode hybride : données de production même si testnet activé
+        if self._use_production_data:
+            # Client sans authentification pour données publiques (production)
+            return await AsyncClient.create()
+        
         if self.is_testnet:
             return await AsyncClient.create(
                 api_key=self._settings.binance.api_key,
@@ -309,6 +332,8 @@ class BinanceClient:
         """
         Récupère le solde d'un asset.
         
+        Note: Ne fonctionne pas en mode production_data (pas d'authentification).
+        
         Args:
             asset: L'asset dont on veut le solde (ex: "USDT", "BTC")
             
@@ -316,6 +341,11 @@ class BinanceClient:
             Solde disponible (free balance)
         """
         self._ensure_connected()
+        
+        # En mode production_data, pas d'accès au compte
+        if self._use_production_data:
+            logger.warning("get_account_balance non disponible en mode production_data")
+            return 0.0
         
         try:
             account = await self._client.get_account()
