@@ -9,22 +9,22 @@
 ## 🎯 État Actuel (À LIRE EN PREMIER)
 
 📍 ON EN EST OÙ ?
-├── Phase: 5 - Données Historiques & Training
-├── Tâche en cours: Phase 5.4 - Évaluation modèle
-├── Prochaine action: Métriques AUC, courbe ROC, feature importance
+├── Phase: 6 - Predictor & Signals
+├── Tâche en cours: Phase 6.1 - ML Predictor
+├── Prochaine action: Créer models/predictor.py
 └── Bloqueurs: Aucun
 
 ### Notes de la dernière session:
 - Session du 15 décembre 2025
-- Phase 5.3 COMPLÉTÉE ✅
-  - ModelTrainer avec XGBoost + calibration isotonic
-  - EvaluationMetrics (AUC, precision, recall, F1)
-  - FeatureImportance avec top N features
-  - Analyse par seuil (0.5 à 0.8) pour choisir le meilleur
-  - Sauvegarde modèle (.joblib) + métadonnées (.json) + CSV
-  - Script train_model.py avec options CLI
-  - 12 tests passent
-- Prochaine étape: Phase 5.4 - Évaluation (courbes ROC, visualisations)
+- Phase 5.4 COMPLÉTÉE ✅
+  - ModelEvaluator avec toutes les visualisations
+  - 6 graphiques: ROC, PR, calibration, distribution, seuils, feature importance
+  - Rapport HTML complet et professionnel
+  - Script evaluate_model.py avec CLI
+  - 14 tests d'intégration passent
+  - Ajout matplotlib aux requirements
+- **PHASE 5 COMPLÈTE** 🎉
+- Prochaine étape: Phase 6 - Predictor & Signals
 
 ## 📋 Phases du Projet
 
@@ -189,11 +189,11 @@
   - [x] Sauvegarde modèle
   - [x] Script `scripts/train_model.py`
 
-- [ ] **5.4 Évaluation**
-  - [ ] Métriques: AUC, précision, recall
-  - [ ] Courbe ROC
-  - [ ] Feature importance
-  - [ ] Validation sur test set
+- [x] **5.4 Évaluation**
+  - [x] Métriques: AUC, précision, recall
+  - [x] Courbe ROC
+  - [x] Feature importance
+  - [x] Validation sur test set
 
 ---
 
@@ -409,6 +409,13 @@
 - `cryptoscalper/models/__init__.py` - Init du module models
 - `scripts/train_model.py` - Script CLI pour lancer l'entraînement
 - `scripts/test_trainer.py` - Tests d'intégration (12 tests ✅)
+
+### Phase 5.4
+- `cryptoscalper/models/evaluator.py` - Évaluation et visualisations
+- `cryptoscalper/models/__init__.py` - Exports mis à jour
+- `scripts/evaluate_model.py` - Script CLI évaluation
+- `scripts/test_evaluator.py` - Tests d'intégration (14 tests)
+- `reports/.gitkeep` - Dossier rapports
 
 ---
 
