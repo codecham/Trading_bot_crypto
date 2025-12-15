@@ -9,22 +9,22 @@
 ## 🎯 État Actuel
 
 📍 ON EN EST OÙ ?
-├── Phase: 10 - Boucle Principale
-├── Tâche en cours: Phase 10.1 - Orchestrateur
-├── Prochaine action: Créer main.py
+├── Phase: 10 - Boucle Principale ✅
+├── Tâche en cours: PHASE 10 COMPLÈTE
+├── Prochaine action: Phase 11 - Paper Trading Extended
 └── Bloqueurs: Aucun
 
 ### Notes de la dernière session:
 - Session du 15 décembre 2025
-- Phase 9 COMPLÉTÉE ✅
-  - BacktestEngine avec simulation frais/slippage
-  - BacktestTrade et BacktestResult complets
-  - Reports: texte, JSON, HTML avec Chart.js
-  - Métriques avancées: Sharpe, Sortino, Calmar
-  - Script CLI scripts/backtest.py
-  - 20/20 tests passés
-- **PHASE 9 COMPLÈTE** 🎉
-- Prochaine étape: Phase 10 - Boucle Principale
+- Phase 10 COMPLÉTÉE ✅
+  - main.py orchestrateur complet
+  - TradingBot avec boucle async
+  - Intégration de tous les modules
+  - Gestion SIGINT/SIGTERM
+  - Mode paper/live via CLI
+  - 19/19 tests passés
+- **PHASE 10 COMPLÈTE** 🎉
+- Prochaine étape: Phase 11 - Paper Trading Extended
 
 
 ## 📋 Phases du Projet
@@ -278,16 +278,16 @@
 ### Phase 10: Boucle Principale 🔴
 > Assemblage final
 
-- [ ] **10.1 Orchestrateur**
-  - [ ] Créer `main.py`
-  - [ ] Boucle principale async
-  - [ ] Intégration tous les modules
-  - [ ] Gestion arrêt propre (SIGINT)
+- [x] **10.1 Orchestrateur**
+  - [x] Créer `main.py`
+  - [x] Boucle principale async
+  - [x] Intégration tous les modules
+  - [x] Gestion arrêt propre (SIGINT)
 
-- [ ] **10.2 Mode Paper Trading**
-  - [ ] Flag --mode paper/live
-  - [ ] Simulation sans ordres réels
-  - [ ] Logging détaillé
+- [x] **10.2 Mode Paper Trading**
+  - [x] Flag --mode paper/live
+  - [x] Simulation sans ordres réels
+  - [x] Logging détaillé
 
 ---
 
@@ -361,6 +361,7 @@
 | 2025-12-15 | 6 | MLPredictor (chargement, prédiction single/batch, confiance), SignalGenerator (filtrage seuils, scoring, lifecycle), TradeSignal (SL/TP auto, statuts). 31 tests passent. |
 | 2025-12-15 | 8 | Executor complet: TradeExecutor (ordres market BUY/SELL, OCO SL+TP, paper trading avec simulation slippage/fees), Position (suivi temps réel, calcul PnL), CompletedTrade (conversion depuis Position), SymbolInfo (validation ordres, rounding). TradeLogger: sauvegarde CSV automatique, TradingStatistics (win_rate, profit_factor, best/worst symbol), export JSON et résumé texte. 14/19 tests passent (5 skippés: réseau). |
 | 2025-12-15 | 9 | Backtest complet: BacktestEngine (simulation frais 0.1%, slippage 0.05%, SL/TP/timeout), BacktestTrade/Result avec 24+ métriques, Reports (texte, JSON, HTML Chart.js), métriques avancées (Sharpe, Sortino, Calmar), stats mensuelles/horaires. Script CLI backtest.py. 20/20 tests passés. |
+| 2025-12-15 | 10 | Orchestrateur complet: main.py avec TradingBot (boucle async, intégration modules), BotConfig (mode, capital, seuils), BotState (stats temps réel), CLI argparse (--mode paper/live), gestion SIGINT/SIGTERM, reset journalier. 19/19 tests passés. |
 
 
 ---
@@ -442,6 +443,10 @@
 - `cryptoscalper/backtest/__init__.py` | Exports du module backtest |
 - `scripts/backtest.py` | Script CLI pour lancer des backtests |
 - `scripts/test_backtest.py` | Tests Phase 9 (20 tests) |
+
+### Phase 10:
+- `cryptoscalper/main.py` | Orchestrateur principal (TradingBot, BotConfig, BotState, BotMode, CLI argparse) |
+- `scripts/test_main.py` | Tests Phase 10 (19 tests) |
 
 
 ---

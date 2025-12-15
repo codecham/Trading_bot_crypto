@@ -1,0 +1,92 @@
+{
+  "trained_at": "2025-12-15T14:14:31.592478",
+  "training_time_seconds": 3.5978939533233643,
+  "n_train_samples": 7021,
+  "n_val_samples": 1504,
+  "n_features": 42,
+  "feature_names": [
+    "rsi_14",
+    "rsi_7",
+    "stoch_k",
+    "stoch_d",
+    "williams_r",
+    "roc_5",
+    "roc_10",
+    "momentum_5",
+    "cci",
+    "cmo",
+    "ema_5_ratio",
+    "ema_10_ratio",
+    "ema_20_ratio",
+    "macd_line",
+    "macd_signal",
+    "macd_histogram",
+    "adx",
+    "aroon_oscillator",
+    "bb_width",
+    "bb_position",
+    "atr",
+    "atr_percent",
+    "returns_std",
+    "hl_range_avg",
+    "spread_percent",
+    "orderbook_imbalance",
+    "bid_depth",
+    "ask_depth",
+    "depth_ratio",
+    "bid_pressure",
+    "ask_pressure",
+    "midprice_distance",
+    "volume_relative",
+    "obv_slope",
+    "volume_delta",
+    "vwap_distance",
+    "ad_line",
+    "returns_1m",
+    "returns_5m",
+    "returns_15m",
+    "consecutive_green",
+    "candle_body_ratio"
+  ],
+  "best_iteration": 200,
+  "is_calibrated": true,
+  "val_metrics": {
+    "accuracy": 0.9960106382978723,
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0,
+    "roc_auc": 0.8839563862928348,
+    "confusion_matrix": [
+      [
+        1498,
+        0
+      ],
+      [
+        6,
+        0
+      ]
+    ]
+  },
+  "test_metrics": {
+    "accuracy": 0.9654485049833887,
+    "precision": 0.0,
+    "recall": 0.0,
+    "f1": 0.0,
+    "roc_auc": 0.7581793636508021,
+    "confusion_matrix": [
+      [
+        1453,
+        0
+      ],
+      [
+        52,
+        0
+      ]
+    ]
+  },
+  "config": {
+    "n_estimators": 200,
+    "max_depth": 6,
+    "learning_rate": 0.05
+  }
+}
