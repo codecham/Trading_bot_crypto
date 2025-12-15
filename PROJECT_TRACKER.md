@@ -10,18 +10,24 @@
 ```
 📍 ON EN EST OÙ ?
 ├── Phase: 5 - Données Historiques & Training
-├── Tâche en cours: Téléchargement des données historiques
-├── Prochaine action: Créer data/historical.py pour télécharger 6 mois de données
+├── Tâche en cours: Phase 5.3 - Entraînement modèle XGBoost
+├── Prochaine action: Créer models/trainer.py pour entraîner le modèle ML
 └── Bloqueurs: Aucun
 ```
 
-### Notes de la dernière session
+
 - Session du 15 décembre 2025
-- Phase 4 complétée ✅
-- Feature Engine avec 42 indicateurs techniques
-- Performance: ~71ms par calcul (100 bougies)
-- Fichiers créés: features.py, test_features.py
-- Tous les 15 tests passent
+- Phase 5.1 COMPLÉTÉE ✅
+  - Module historical.py pour téléchargement données Binance
+  - Support multi-symboles, pagination, Parquet/CSV
+  - Ajout pyarrow dans requirements.txt
+- Phase 5.2 COMPLÉTÉE ✅
+  - DatasetBuilder avec calcul 42 features sur historique
+  - Création labels (hausse ≥0.2% en 3min avec future high)
+  - Split temporel train/val/test (70/15/15)
+  - Analyse équilibre des classes
+  - 12 tests passent
+- Prochaine étape: Phase 5.3 - Entraînement XGBoost
 
 ## 📋 Phases du Projet
 
@@ -167,17 +173,17 @@
 ### Phase 5: Données Historiques & Training 🔴
 > Préparer et entraîner le modèle ML
 
-- [ ] **5.1 Téléchargement historique**
-  - [ ] Créer `data/historical.py`
-  - [ ] Télécharger 6 mois de données
-  - [ ] Stocker en CSV/Parquet
-  - [ ] Script `scripts/download_data.py`
+- [x] **5.1 Téléchargement historique**
+  - [x] Créer `data/historical.py`
+  - [x] Télécharger 6 mois de données
+  - [x] Stocker en CSV/Parquet
+  - [x] Script `scripts/download_data.py`
 
-- [ ] **5.2 Préparation dataset**
-  - [ ] Calcul des features sur historique
-  - [ ] Création des labels (hausse ≥0.2% en 3min)
-  - [ ] Split temporel train/val/test
-  - [ ] Vérification équilibre des classes
+- [x] **5.2 Préparation dataset**
+  - [x] Calcul des features sur historique
+  - [x] Création des labels (hausse ≥0.2% en 3min)
+  - [x] Split temporel train/val/test
+  - [x] Vérification équilibre des classes
 
 - [ ] **5.3 Entraînement modèle**
   - [ ] Créer `models/trainer.py`
@@ -389,6 +395,17 @@
 ### Phase 4
 - `cryptoscalper/data/features.py` - Feature Engine avec 42 indicateurs
 - `scripts/test_features.py` - Tests d'intégration Phase 4
+
+### Phase 5.1
+- `cryptoscalper/data/historical.py` - Téléchargement données historiques
+- `scripts/download_data.py` - Script CLI téléchargement
+- `scripts/test_historical.py` - Tests d'intégration Phase 5.1
+
+### Phase 5.2
+- `cryptoscalper/data/dataset.py` - Préparation dataset ML
+- `scripts/prepare_dataset.py` - Script CLI préparation
+- `scripts/test_dataset.py` - Tests d'intégration Phase 5.2
+- `datasets/.gitkeep` - Dossier pour datasets préparés
 
 ---
 
