@@ -6,23 +6,25 @@
 
 ---
 
-## 🎯 État Actuel (À LIRE EN PREMIER)
+## 🎯 État Actuel
 
 📍 ON EN EST OÙ ?
-├── Phase: 9 - Backtest
-├── Tâche en cours: Phase 9.1 - Backtest Engine
-├── Prochaine action: Créer backtest/engine.py
+├── Phase: 10 - Boucle Principale
+├── Tâche en cours: Phase 10.1 - Orchestrateur
+├── Prochaine action: Créer main.py
 └── Bloqueurs: Aucun
 
 ### Notes de la dernière session:
 - Session du 15 décembre 2025
-- Phase 8 COMPLÉTÉE ✅
-  - TradeExecutor avec paper trading et ordres OCO
-  - Position et CompletedTrade pour suivi trades
-  - TradeLogger avec CSV, statistiques et exports
-  - 14 tests passés, 5 skippés (réseau)
-- **PHASE 8 COMPLÈTE** 🎉
-- Prochaine étape: Phase 9 - Backtest
+- Phase 9 COMPLÉTÉE ✅
+  - BacktestEngine avec simulation frais/slippage
+  - BacktestTrade et BacktestResult complets
+  - Reports: texte, JSON, HTML avec Chart.js
+  - Métriques avancées: Sharpe, Sortino, Calmar
+  - Script CLI scripts/backtest.py
+  - 20/20 tests passés
+- **PHASE 9 COMPLÈTE** 🎉
+- Prochaine étape: Phase 10 - Boucle Principale
 
 
 ## 📋 Phases du Projet
@@ -258,20 +260,18 @@
 
 ---
 
-### Phase 9: Backtest 🔴
-> Validation de la stratégie
+### Phase 9: Backtest ✅
+- [x] **9.1 Backtest Engine**
+  - [x] Créer `backtest/engine.py`
+  - [x] Simulation des ordres
+  - [x] Prise en compte frais
+  - [x] Simulation slippage
 
-- [ ] **9.1 Backtest Engine**
-  - [ ] Créer `backtest/engine.py`
-  - [ ] Simulation des ordres
-  - [ ] Prise en compte frais
-  - [ ] Simulation slippage
-
-- [ ] **9.2 Rapports**
-  - [ ] Créer `backtest/reports.py`
-  - [ ] Métriques: win rate, PnL, Sharpe
-  - [ ] Graphiques performance
-  - [ ] Script `scripts/backtest.py`
+- [x] **9.2 Rapports**
+  - [x] Créer `backtest/reports.py`
+  - [x] Métriques: win rate, PnL, Sharpe
+  - [x] Graphiques performance
+  - [x] Script `scripts/backtest.py`
 
 ---
 
@@ -360,6 +360,7 @@
 | 2025-12-15 | 4 | Feature Engine complet (42 features): Momentum (RSI, Stochastic, Williams, ROC, CCI, CMO), Tendance (EMA, MACD, ADX, Aroon), Volatilité (BB, ATR), Orderbook (spread, imbalance, depth), Volume (OBV, VWAP, A/D), Price Action (returns, chandeliers). Performance ~71ms. |
 | 2025-12-15 | 6 | MLPredictor (chargement, prédiction single/batch, confiance), SignalGenerator (filtrage seuils, scoring, lifecycle), TradeSignal (SL/TP auto, statuts). 31 tests passent. |
 | 2025-12-15 | 8 | Executor complet: TradeExecutor (ordres market BUY/SELL, OCO SL+TP, paper trading avec simulation slippage/fees), Position (suivi temps réel, calcul PnL), CompletedTrade (conversion depuis Position), SymbolInfo (validation ordres, rounding). TradeLogger: sauvegarde CSV automatique, TradingStatistics (win_rate, profit_factor, best/worst symbol), export JSON et résumé texte. 14/19 tests passent (5 skippés: réseau). |
+| 2025-12-15 | 9 | Backtest complet: BacktestEngine (simulation frais 0.1%, slippage 0.05%, SL/TP/timeout), BacktestTrade/Result avec 24+ métriques, Reports (texte, JSON, HTML Chart.js), métriques avancées (Sharpe, Sortino, Calmar), stats mensuelles/horaires. Script CLI backtest.py. 20/20 tests passés. |
 
 
 ---
@@ -434,6 +435,13 @@
 - `cryptoscalper/trading/__init__.py` | Exports du module trading (mis à jour) |
 - `cryptoscalper/utils/trade_logger.py` | Trade Logger CSV avec statistiques et exports |
 - `scripts/test_executor.py` | Tests Phase 8 (19 tests) |
+
+### Phase 9:
+- `cryptoscalper/backtest/engine.py` | Moteur de backtest complet (BacktestEngine, BacktestConfig, BacktestTrade, BacktestResult, CloseReason) |
+- `cryptoscalper/backtest/reports.py` | Génération rapports (BacktestReport, AdvancedMetrics, ASCII charts, export JSON/HTML) |
+- `cryptoscalper/backtest/__init__.py` | Exports du module backtest |
+- `scripts/backtest.py` | Script CLI pour lancer des backtests |
+- `scripts/test_backtest.py` | Tests Phase 9 (20 tests) |
 
 
 ---
