@@ -9,22 +9,20 @@
 ## 🎯 État Actuel (À LIRE EN PREMIER)
 
 📍 ON EN EST OÙ ?
-├── Phase: 8 - Executor
-├── Tâche en cours: Phase 8.1 - Order Manager
-├── Prochaine action: Créer trading/executor.py
+├── Phase: 9 - Backtest
+├── Tâche en cours: Phase 9.1 - Backtest Engine
+├── Prochaine action: Créer backtest/engine.py
 └── Bloqueurs: Aucun
 
 ### Notes de la dernière session:
 - Session du 15 décembre 2025
-- Phase 7 COMPLÉTÉE ✅
-  - RiskConfig avec validation et 15+ paramètres
-  - DailyLimits (perte journalière, trades/jour, trades/heure)
-  - KillSwitch (tracking drawdown, activation auto)
-  - RiskManager complet avec position sizing
-  - CompletedTrade pour tracking des résultats
-  - 28 tests passent
-- **PHASE 7 COMPLÈTE** 🎉
-- Prochaine étape: Phase 8 - Executor
+- Phase 8 COMPLÉTÉE ✅
+  - TradeExecutor avec paper trading et ordres OCO
+  - Position et CompletedTrade pour suivi trades
+  - TradeLogger avec CSV, statistiques et exports
+  - 14 tests passés, 5 skippés (réseau)
+- **PHASE 8 COMPLÈTE** 🎉
+- Prochaine étape: Phase 9 - Backtest
 
 
 ## 📋 Phases du Projet
@@ -240,23 +238,23 @@
 ### Phase 8: Executor 🔴
 > Exécution des ordres
 
-- [ ] **8.1 Order Manager**
-  - [ ] Créer `trading/executor.py`
-  - [ ] Ordre market BUY
-  - [ ] Ordre OCO (SL+TP)
-  - [ ] Gestion erreurs ordres
+- [x] **8.1 Order Manager**
+  - [x] Créer `trading/executor.py`
+  - [x] Ordre market BUY
+  - [x] Ordre OCO (SL+TP)
+  - [x] Gestion erreurs ordres
 
-- [ ] **8.2 Position Tracker**
-  - [ ] Dataclass `Position`
-  - [ ] Dataclass `CompletedTrade`
-  - [ ] Suivi positions ouvertes
-  - [ ] Synchronisation avec exchange
+- [x] **8.2 Position Tracker**
+  - [x] Dataclass `Position`
+  - [x] Dataclass `CompletedTrade`
+  - [x] Suivi positions ouvertes
+  - [x] Synchronisation avec exchange
 
-- [ ] **8.3 Trade Logger**
-  - [ ] Créer `utils/trade_logger.py`
-  - [ ] Sauvegarde CSV des trades
-  - [ ] Calcul statistiques
-  - [ ] Export pour analyse
+- [x] **8.3 Trade Logger**
+  - [x] Créer `utils/trade_logger.py`
+  - [x] Sauvegarde CSV des trades
+  - [x] Calcul statistiques
+  - [x] Export pour analyse
 
 ---
 
@@ -361,6 +359,7 @@
 | 2025-12-15 | 3 | Créé symbols.py (SymbolsManager avec rafraîchissement auto), multi_pair_scanner.py (détection momentum/breakout, ScannerAlert, scoring), collector.py (interface unifiée). Tests Phase 3 passés. |
 | 2025-12-15 | 4 | Feature Engine complet (42 features): Momentum (RSI, Stochastic, Williams, ROC, CCI, CMO), Tendance (EMA, MACD, ADX, Aroon), Volatilité (BB, ATR), Orderbook (spread, imbalance, depth), Volume (OBV, VWAP, A/D), Price Action (returns, chandeliers). Performance ~71ms. |
 | 2025-12-15 | 6 | MLPredictor (chargement, prédiction single/batch, confiance), SignalGenerator (filtrage seuils, scoring, lifecycle), TradeSignal (SL/TP auto, statuts). 31 tests passent. |
+| 2025-12-15 | 8 | Executor complet: TradeExecutor (ordres market BUY/SELL, OCO SL+TP, paper trading avec simulation slippage/fees), Position (suivi temps réel, calcul PnL), CompletedTrade (conversion depuis Position), SymbolInfo (validation ordres, rounding). TradeLogger: sauvegarde CSV automatique, TradingStatistics (win_rate, profit_factor, best/worst symbol), export JSON et résumé texte. 14/19 tests passent (5 skippés: réseau). |
 
 
 ---
@@ -425,10 +424,16 @@
 - `scripts/test_predictor.py` - Tests Phase 6.1 (14 tests)
 - `scripts/test_signals.py` - Tests Phase 6.2 (17 tests)
 
-### Fichiers Phase 7:
+### Phase 7:
 - `cryptoscalper/trading/risk_manager.py` - Module Risk Management complet
 - `cryptoscalper/trading/__init__.py` - Module init mis à jour
 - `scripts/test_risk_manager.py` - Tests Phase 7 (28 tests)
+
+### Phase 8:
+- `cryptoscalper/trading/executor.py` | Order Manager complet (TradeExecutor, Position, CompletedTrade, SymbolInfo, OrderResult) |
+- `cryptoscalper/trading/__init__.py` | Exports du module trading (mis à jour) |
+- `cryptoscalper/utils/trade_logger.py` | Trade Logger CSV avec statistiques et exports |
+- `scripts/test_executor.py` | Tests Phase 8 (19 tests) |
 
 
 ---
