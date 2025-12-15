@@ -7,27 +7,24 @@
 ---
 
 ## 🎯 État Actuel (À LIRE EN PREMIER)
-```
+
 📍 ON EN EST OÙ ?
 ├── Phase: 5 - Données Historiques & Training
-├── Tâche en cours: Phase 5.3 - Entraînement modèle XGBoost
-├── Prochaine action: Créer models/trainer.py pour entraîner le modèle ML
+├── Tâche en cours: Phase 5.4 - Évaluation modèle
+├── Prochaine action: Métriques AUC, courbe ROC, feature importance
 └── Bloqueurs: Aucun
-```
 
-
+### Notes de la dernière session:
 - Session du 15 décembre 2025
-- Phase 5.1 COMPLÉTÉE ✅
-  - Module historical.py pour téléchargement données Binance
-  - Support multi-symboles, pagination, Parquet/CSV
-  - Ajout pyarrow dans requirements.txt
-- Phase 5.2 COMPLÉTÉE ✅
-  - DatasetBuilder avec calcul 42 features sur historique
-  - Création labels (hausse ≥0.2% en 3min avec future high)
-  - Split temporel train/val/test (70/15/15)
-  - Analyse équilibre des classes
+- Phase 5.3 COMPLÉTÉE ✅
+  - ModelTrainer avec XGBoost + calibration isotonic
+  - EvaluationMetrics (AUC, precision, recall, F1)
+  - FeatureImportance avec top N features
+  - Analyse par seuil (0.5 à 0.8) pour choisir le meilleur
+  - Sauvegarde modèle (.joblib) + métadonnées (.json) + CSV
+  - Script train_model.py avec options CLI
   - 12 tests passent
-- Prochaine étape: Phase 5.3 - Entraînement XGBoost
+- Prochaine étape: Phase 5.4 - Évaluation (courbes ROC, visualisations)
 
 ## 📋 Phases du Projet
 
@@ -185,12 +182,12 @@
   - [x] Split temporel train/val/test
   - [x] Vérification équilibre des classes
 
-- [ ] **5.3 Entraînement modèle**
-  - [ ] Créer `models/trainer.py`
-  - [ ] Pipeline XGBoost
-  - [ ] Calibration des probabilités
-  - [ ] Sauvegarde modèle
-  - [ ] Script `scripts/train_model.py`
+- [x] **5.3 Entraînement modèle**
+  - [x] Créer `models/trainer.py`
+  - [x] Pipeline XGBoost
+  - [x] Calibration des probabilités
+  - [x] Sauvegarde modèle
+  - [x] Script `scripts/train_model.py`
 
 - [ ] **5.4 Évaluation**
   - [ ] Métriques: AUC, précision, recall
@@ -406,6 +403,12 @@
 - `scripts/prepare_dataset.py` - Script CLI préparation
 - `scripts/test_dataset.py` - Tests d'intégration Phase 5.2
 - `datasets/.gitkeep` - Dossier pour datasets préparés
+
+### Phase 5.3
+- `cryptoscalper/models/trainer.py` - Module d'entraînement XGBoost avec calibration
+- `cryptoscalper/models/__init__.py` - Init du module models
+- `scripts/train_model.py` - Script CLI pour lancer l'entraînement
+- `scripts/test_trainer.py` - Tests d'intégration (12 tests ✅)
 
 ---
 
