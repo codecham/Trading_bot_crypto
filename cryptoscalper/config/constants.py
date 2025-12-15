@@ -128,6 +128,21 @@ XGBOOST_MAX_DEPTH = 6
 XGBOOST_LEARNING_RATE = 0.05
 
 # ============================================
+# SIGNAL GENERATION
+# ============================================
+
+# Seuils pour générer un signal de trading
+SIGNAL_MIN_PROBABILITY = 0.65  # Probabilité minimum de hausse
+SIGNAL_MIN_CONFIDENCE = 0.55   # Confiance minimum du modèle
+SIGNAL_MIN_PREDICTED_MOVE = 0.002  # Mouvement minimum prédit (0.2%)
+
+# Nombre maximum de signaux à conserver en mémoire
+MAX_SIGNALS_HISTORY = 1000
+
+# Durée de validité d'un signal (secondes)
+SIGNAL_VALIDITY_SECONDS = 60
+
+# ============================================
 # RISK MANAGEMENT
 # ============================================
 
@@ -143,6 +158,10 @@ MAX_CONSECUTIVE_LOSSES = 5
 # Position sizing
 DEFAULT_POSITION_SIZE_PERCENT = 0.20  # 20% du capital
 MIN_POSITION_SIZE_USDT = 10.0  # Minimum Binance
+
+# Stop-loss et take-profit par défaut
+DEFAULT_STOP_LOSS_PERCENT = 0.004   # 0.4%
+DEFAULT_TAKE_PROFIT_PERCENT = 0.003  # 0.3%
 
 # ============================================
 # LOGGING
@@ -167,6 +186,7 @@ ERRORS_LOG_FILE = "errors.log"
 DATA_DIR = "data"
 MODELS_DIR = "models/saved"
 CACHE_DIR = "cache"
+REPORTS_DIR = "reports"
 
 # Fichiers
 MODEL_FILENAME = "xgb_model_latest.joblib"

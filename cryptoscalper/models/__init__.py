@@ -5,36 +5,35 @@ Module ML pour CryptoScalper.
 Contient:
 - trainer.py : Entraînement du modèle XGBoost
 - evaluator.py : Évaluation et visualisations
-- predictor.py : Prédiction en temps réel (Phase 6)
+- predictor.py : Prédiction en temps réel
+
+Note: Les imports sont lazy pour éviter les dépendances circulaires.
+Utilisez directement:
+    from cryptoscalper.models.predictor import MLPredictor
 """
 
-from cryptoscalper.models.trainer import (
-    ModelTrainer,
-    XGBoostConfig,
-    TrainingResult,
-    EvaluationMetrics,
-    FeatureImportance,
-    print_threshold_analysis,
-    find_optimal_threshold,
-)
-
-from cryptoscalper.models.evaluator import (
-    ModelEvaluator,
-    EvaluationReport,
-    evaluate_model_from_file,
-)
-
+# Imports lazy - on n'importe que ce qui est demandé
 __all__ = [
-    # Trainer
-    "ModelTrainer",
-    "XGBoostConfig",
-    "TrainingResult",
-    "EvaluationMetrics",
-    "FeatureImportance",
-    "print_threshold_analysis",
-    "find_optimal_threshold",
-    # Evaluator
-    "ModelEvaluator",
-    "EvaluationReport",
-    "evaluate_model_from_file",
+    # Predictor (Phase 6.1)
+    "MLPredictor",
+    "PredictionResult",
+    "ModelMetadata",
+    "load_predictor",
+    "predict_single",
 ]
+
+
+def __getattr__(name):
+    """Import lazy des modules."""
+    if name in ["MLPredictor", "PredictionResult", "ModelMetadata", 
+                "load_predictor", "predict_single"]:
+        from cryptoscalper.models.predictor import (
+            MLPredictor,
+            PredictionResult,
+            ModelMetadata,
+            load_predictor,
+            predict_single,
+        )
+        return locals()[name]
+    
+    raise AttributeError(f"module 'cryptoscalper.models' has no attribute '{name}'")

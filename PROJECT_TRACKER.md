@@ -9,22 +9,26 @@
 ## 🎯 État Actuel (À LIRE EN PREMIER)
 
 📍 ON EN EST OÙ ?
-├── Phase: 6 - Predictor & Signals
-├── Tâche en cours: Phase 6.1 - ML Predictor
-├── Prochaine action: Créer models/predictor.py
+├── Phase: 7 - Risk Management
+├── Tâche en cours: Phase 7.1 - Risk Manager Core
+├── Prochaine action: Créer trading/risk_manager.py
 └── Bloqueurs: Aucun
 
 ### Notes de la dernière session:
 - Session du 15 décembre 2025
-- Phase 5.4 COMPLÉTÉE ✅
-  - ModelEvaluator avec toutes les visualisations
-  - 6 graphiques: ROC, PR, calibration, distribution, seuils, feature importance
-  - Rapport HTML complet et professionnel
-  - Script evaluate_model.py avec CLI
-  - 14 tests d'intégration passent
-  - Ajout matplotlib aux requirements
-- **PHASE 5 COMPLÈTE** 🎉
-- Prochaine étape: Phase 6 - Predictor & Signals
+- Phase 6.1 COMPLÉTÉE ✅
+  - MLPredictor avec chargement modèle, prédiction single/batch
+  - PredictionResult avec calcul de confiance
+  - Support modèles calibrés et non-calibrés
+  - 14 tests passent
+- Phase 6.2 COMPLÉTÉE ✅
+  - SignalGenerator avec filtrage et scoring
+  - TradeSignal avec SL/TP automatiques
+  - Gestion lifecycle (pending/executed/expired)
+  - 17 tests passent
+- **PHASE 6 COMPLÈTE** 🎉
+- Prochaine étape: Phase 7 - Risk Management
+
 
 ## 📋 Phases du Projet
 
@@ -197,20 +201,20 @@
 
 ---
 
-### Phase 6: Predictor & Signals 🔴
+### Phase 6: Predictor & Signals ✅ COMPLÉTÉE
 > Inférence et génération de signaux
 
-- [ ] **6.1 ML Predictor**
-  - [ ] Créer `models/predictor.py`
-  - [ ] Chargement modèle
-  - [ ] Prédiction single + batch
-  - [ ] Calcul confiance
+- [x] **6.1 ML Predictor**
+  - [x] Créer `models/predictor.py`
+  - [x] Chargement modèle
+  - [x] Prédiction single + batch
+  - [x] Calcul confiance
 
-- [ ] **6.2 Signal Generator**
-  - [ ] Créer `trading/signals.py`
-  - [ ] Filtrage par seuils
-  - [ ] Dataclass `TradeSignal`
-  - [ ] Ranking des opportunités
+- [x] **6.2 Signal Generator**
+  - [x] Créer `trading/signals.py`
+  - [x] Filtrage par seuils
+  - [x] Dataclass `TradeSignal`
+  - [x] Ranking des opportunités
 
 ---
 
@@ -359,6 +363,7 @@
 | 2025-12-15 | 0→2 | Setup complet (config, logger, exceptions), Client Binance avec mode hybride, WebSocket complet (ticker, klines, orderbook), DataCollector interface unifiée. Tous tests passent. |
 | 2025-12-15 | 3 | Créé symbols.py (SymbolsManager avec rafraîchissement auto), multi_pair_scanner.py (détection momentum/breakout, ScannerAlert, scoring), collector.py (interface unifiée). Tests Phase 3 passés. |
 | 2025-12-15 | 4 | Feature Engine complet (42 features): Momentum (RSI, Stochastic, Williams, ROC, CCI, CMO), Tendance (EMA, MACD, ADX, Aroon), Volatilité (BB, ATR), Orderbook (spread, imbalance, depth), Volume (OBV, VWAP, A/D), Price Action (returns, chandeliers). Performance ~71ms. |
+| 2025-12-15 | 6 | MLPredictor (chargement, prédiction single/batch, confiance), SignalGenerator (filtrage seuils, scoring, lifecycle), TradeSignal (SL/TP auto, statuts). 31 tests passent. |
 
 
 ---
@@ -416,6 +421,13 @@
 - `scripts/evaluate_model.py` - Script CLI évaluation
 - `scripts/test_evaluator.py` - Tests d'intégration (14 tests)
 - `reports/.gitkeep` - Dossier rapports
+
+### Phase 6
+- `cryptoscalper/models/predictor.py` - MLPredictor et PredictionResult
+- `cryptoscalper/trading/signals.py` - SignalGenerator et TradeSignal
+- `scripts/test_predictor.py` - Tests Phase 6.1 (14 tests)
+- `scripts/test_signals.py` - Tests Phase 6.2 (17 tests)
+
 
 ---
 
