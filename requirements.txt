@@ -1,0 +1,86 @@
+# requirements.txt
+# CryptoScalper AI - Dépendances Python
+
+# ============================================
+# CORE - Indispensables
+# ============================================
+
+# API Binance (client officiel avec support async)
+python-binance>=1.0.19
+
+# Manipulation de données
+pandas>=2.0.0
+numpy>=1.24.0
+
+# ============================================
+# CONFIGURATION & VALIDATION
+# ============================================
+
+# Configuration avec validation (remplace pydantic-settings)
+pydantic>=2.0.0
+pydantic-settings>=2.0.0
+
+# Variables d'environnement
+python-dotenv>=1.0.0
+
+# Fichiers YAML
+pyyaml>=6.0.0
+
+# ============================================
+# ANALYSE TECHNIQUE
+# ============================================
+
+# Indicateurs techniques (RSI, MACD, Bollinger, etc.)
+ta>=0.11.0
+
+# ============================================
+# MACHINE LEARNING
+# ============================================
+
+# ML classique
+scikit-learn>=1.3.0
+
+# Gradient Boosting (modèle principal)
+xgboost>=2.0.0
+
+# Sérialisation des modèles
+joblib>=1.3.0
+
+# ============================================
+# ASYNC & NETWORKING
+# ============================================
+
+# Async HTTP
+aiohttp>=3.8.0
+
+# WebSocket
+websockets>=11.0
+
+# ============================================
+# LOGGING & MONITORING
+# ============================================
+
+# Logging simplifié et puissant
+loguru>=0.7.0
+
+# ============================================
+# DÉVELOPPEMENT & TESTS
+# ============================================
+
+# Tests
+pytest>=7.0.0
+pytest-asyncio>=0.21.0
+pytest-cov>=4.0.0
+
+# Linting & Formatting
+ruff>=0.1.0
+black>=23.0.0
+
+# Type checking
+mypy>=1.5.0
+
+# ============================================
+# OPTIONNEL - Backtesting (à activer plus tard)
+# ============================================
+
+# vectorbt>=0.26.0  # Backtesting vectorisé (lourd, installer si besoin)

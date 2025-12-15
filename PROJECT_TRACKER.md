@@ -28,38 +28,39 @@
 ### Phase 0: Setup Environnement ⏳
 > Préparer l'environnement de développement
 
-- [ ] **0.1 Structure projet**
-  - [ ] Créer l'arborescence des dossiers
-  - [ ] Initialiser git + .gitignore
-  - [ ] Créer requirements.txt de base
-  - [ ] Créer le fichier .env.example
+- [x] **0.1 Structure projet**
+  - [x] Créer l'arborescence des dossiers
+  - [x] Initialiser git + .gitignore
+  - [x] Créer requirements.txt de base
+  - [x] Créer le fichier .env.example
 
-- [ ] **0.2 Configuration**
-  - [ ] Créer `config/settings.py` (dataclasses Pydantic)
-  - [ ] Créer `config/default_config.yaml`
-  - [ ] Créer le loader de configuration
+- [x] **0.2 Configuration**
+  - [x] Créer `config/settings.py` (dataclasses Pydantic)
+  - [x] Créer `config/default_config.yaml`
+  - [x] Créer le loader de configuration
 
-- [ ] **0.3 Logging**
-  - [ ] Créer `utils/logger.py` avec loguru
-  - [ ] Définir les formats de log
-  - [ ] Test du système de logging
+- [x] **0.3 Logging**
+  - [x] Créer `utils/logger.py` avec loguru
+  - [x] Définir les formats de log
+  - [x] Créer `utils/exceptions.py`
+  - [x] Test du système de logging
 
 ---
 
 ### Phase 1: Connexion Binance 🔴
 > Se connecter à Binance et récupérer des données de base
 
-- [ ] **1.1 Client Binance**
-  - [ ] Créer `data/binance_client.py` (wrapper)
-  - [ ] Connexion testnet fonctionnelle
-  - [ ] Gestion des erreurs API
-  - [ ] Test: récupérer le prix BTC
+- [x] **1.1 Client Binance**
+  - [x] Créer `data/binance_client.py` (wrapper)
+  - [x] Connexion testnet fonctionnelle
+  - [x] Gestion des erreurs API
+  - [x] Test: récupérer le prix BTC
 
-- [ ] **1.2 Données REST (basique)**
-  - [ ] Récupérer prix spot d'une paire
-  - [ ] Récupérer orderbook
-  - [ ] Récupérer klines (chandeliers)
-  - [ ] Tests unitaires
+- [x] **1.2 Données REST (basique)**
+  - [x] Récupérer prix spot d'une paire
+  - [x] Récupérer orderbook
+  - [x] Récupérer klines (chandeliers)
+  - [x] Tests unitaires
 
 ---
 
@@ -352,5 +353,15 @@
 
 | Date | Phase | Accomplissements |
 |------|-------|------------------|
-| 2025-XX-XX | 0 | Setup initial, création tracker |
+| 2025-12-15 | 0 | Setup initial, création tracker |
+
+---
+
+## 📝 Notes de Session
+
+### Session 1 - 15 décembre 2024
+- ✅ Phase 0 complétée
+- Remplacement de pandas-ta par ta (problème compatibilité)
+- Tous les tests passent
+- Prochaine étape : Phase 1 - Connexion Binance
 
