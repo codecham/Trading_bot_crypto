@@ -1,0 +1,137 @@
+=================================================================
+🧪 CryptoScalper AI - Tests Phase 4: Feature Engine
+=================================================================
+
+──────────────────────────────────────────────────
+📦 4.1 Configuration & Création
+──────────────────────────────────────────────────
+
+🔧 Test 4.1 - Création FeatureEngine...
+  ✅ FeatureEngine créé avec 42 features
+  ✅ Configuration personnalisée OK
+
+──────────────────────────────────────────────────
+📦 4.2-4.7 Calcul des Features
+──────────────────────────────────────────────────
+
+📈 Test 4.2 - Features Momentum (10 features)...
+     rsi_14: 47.4690
+     rsi_7: 42.5499
+     stoch_k: 29.4099
+     stoch_d: 31.6904
+     williams_r: -70.5901
+     roc_5: -0.1775
+     roc_10: -0.1990
+     momentum_5: 46.9294
+     cci: -43.2758
+     cmo: 6.0180
+  ✅ 10 features momentum calculées
+
+📊 Test 4.3 - Features Tendance (8 features)...
+     ema_5_ratio: 0.9997
+     ema_10_ratio: 0.9993
+     ema_20_ratio: 0.9991
+     macd_line: 1.4465
+     macd_signal: 15.8120
+     macd_histogram: -14.3655
+     adx: 10.5448
+     aroon_oscillator: 40.0000
+  ✅ 8 features tendance calculées
+
+🌊 Test 4.4 - Features Volatilité (6 features)...
+     bb_width: 0.005944
+     bb_position: 0.330425
+     atr: 145.954166
+     atr_percent: 0.327908
+     returns_std: 0.001382
+     hl_range_avg: 0.003098
+  ✅ 6 features volatilité calculées
+
+📖 Test 4.5 - Features Orderbook (8 features)...
+     spread_percent: 0.022222
+     orderbook_imbalance: 0.000000
+     bid_depth: 426990.000000
+     ask_depth: 428105.000000
+     depth_ratio: 0.997395
+     bid_pressure: 9.500000
+     ask_pressure: 0.000000
+     midprice_distance: -1.098360
+  ✅ 8 features orderbook calculées
+
+📖 Test 4.5b - Features Orderbook sans données...
+  ✅ 8 features orderbook = NaN (sans données)
+
+📊 Test 4.6 - Features Volume (5 features)...
+     volume_relative: 1.483890
+     obv_slope: 0.098485
+     volume_delta: -31.457314
+     vwap_distance: -0.295147
+     ad_line: -0.083305
+  ✅ 5 features volume calculées
+
+📉 Test 4.7 - Features Price Action (5 features)...
+     returns_1m: -0.036917
+     returns_5m: -0.177456
+     returns_15m: -0.004354
+     consecutive_green: 0.000000
+     candle_body_ratio: 0.239655
+  ✅ 5 features price action calculées
+
+──────────────────────────────────────────────────
+📦 4.8-4.14 Validation Globale
+──────────────────────────────────────────────────
+
+🔢 Test 4.8 - Vérification des 42 features...
+  ✅ 42 features présentes
+     Valides: 42, NaN: 0
+
+🔄 Test 4.9 - Conversion FeatureSet...
+  ✅ to_series(): 42 éléments
+  ✅ to_dict(): 42 clés
+
+📦 Test 4.10 - Calcul batch...
+  ✅ Batch: 5 paires x 42 features
+     Shape: (5, 42)
+
+⚡ Test 4.11 - Performance...
+  📊 Temps moyen par calcul: 96.07ms
+     Total pour 50 itérations: 4.80s
+  ✅ Objectif: < 100ms
+
+🌐 Test 4.12 - Avec données réelles Binance...
+  ✅ Features calculées pour BTCUSDT réel
+     Prix actuel: $89,612.70
+     rsi_14: 40.0362
+     macd_histogram: -24.9718
+     bb_position: 0.1411
+     spread_percent: 0.0000
+     Features valides: 42/42
+
+🔧 Test 4.13 - Fonction helper...
+  ✅ compute_features_for_symbol(): 42 features
+
+⚠️ Test 4.14 - Données insuffisantes...
+  ✅ Géré correctement: 42/42 features = NaN
+
+=================================================================
+📊 RÉSULTATS PHASE 4
+=================================================================
+  4.1 Création FeatureEngine: ✅ PASS
+  4.2 Momentum (10): ✅ PASS
+  4.3 Tendance (8): ✅ PASS
+  4.4 Volatilité (6): ✅ PASS
+  4.5 Orderbook (8): ✅ PASS
+  4.5b Orderbook sans données: ✅ PASS
+  4.6 Volume (5): ✅ PASS
+  4.7 Price Action (5): ✅ PASS
+  4.8 Toutes les 42 features: ✅ PASS
+  4.9 Conversion FeatureSet: ✅ PASS
+  4.10 Calcul batch: ✅ PASS
+  4.11 Performance: ✅ PASS
+  4.12 Données réelles: ✅ PASS
+  4.13 Fonction helper: ✅ PASS
+  4.14 Données insuffisantes: ✅ PASS
+─────────────────────────────────────────────────────────────────
+  Total: 15/15 tests passés
+=================================================================
+🎉 Phase 4 - Feature Engine : VALIDÉE !

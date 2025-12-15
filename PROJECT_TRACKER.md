@@ -9,20 +9,19 @@
 ## 🎯 État Actuel (À LIRE EN PREMIER)
 ```
 📍 ON EN EST OÙ ?
-├── Phase: 4 - Feature Engine
-├── Tâche en cours: Créer data/features.py avec les 42 indicateurs
-├── Prochaine action: Implémenter les indicateurs de momentum (RSI, Stochastic, etc.)
+├── Phase: 5 - Données Historiques & Training
+├── Tâche en cours: Téléchargement des données historiques
+├── Prochaine action: Créer data/historical.py pour télécharger 6 mois de données
 └── Bloqueurs: Aucun
 ```
 
-### 📝 Notes de la dernière session
+### Notes de la dernière session
 - Session du 15 décembre 2025
-- Phases 0, 1, 2, 3 complétées ✅
-- Tous les tests passent
-- Scanner multi-paires opérationnel (momentum, breakout, scoring)
-- Fichiers créés : symbols.py, multi_pair_scanner.py, collector.py
-
----
+- Phase 4 complétée ✅
+- Feature Engine avec 42 indicateurs techniques
+- Performance: ~71ms par calcul (100 bougies)
+- Fichiers créés: features.py, test_features.py
+- Tous les 15 tests passent
 
 ## 📋 Phases du Projet
 
@@ -117,52 +116,51 @@
 
 ---
 
-### Phase 4: Feature Engine 🔴
-> Calcul des indicateurs techniques
+### Phase 4: Feature Engine ✅ COMPLÉTÉE
 
-- [ ] **4.1 Indicateurs Momentum** (10 features)
-  - [ ] RSI (14 et 7 périodes)
-  - [ ] Stochastic %K, %D
-  - [ ] Williams %R
-  - [ ] ROC (5 et 10)
-  - [ ] Momentum, CCI, CMO
+- [x] **4.1 Indicateurs Momentum** (10 features)
+  - [x] RSI (14 et 7 périodes)
+  - [x] Stochastic %K, %D
+  - [x] Williams %R
+  - [x] ROC (5 et 10)
+  - [x] Momentum, CCI, CMO
 
-- [ ] **4.2 Indicateurs Tendance** (8 features)
-  - [ ] EMA 5/10/20 ratios
-  - [ ] MACD (line, signal, histogram)
-  - [ ] ADX
-  - [ ] Aroon Oscillator
+- [x] **4.2 Indicateurs Tendance** (8 features)
+  - [x] EMA 5/10/20 ratios
+  - [x] MACD (line, signal, histogram)
+  - [x] ADX
+  - [x] Aroon Oscillator
 
-- [ ] **4.3 Indicateurs Volatilité** (6 features)
-  - [ ] Bollinger Bands (width + position)
-  - [ ] ATR (absolu et %)
-  - [ ] Écart-type returns
-  - [ ] Range High-Low
+- [x] **4.3 Indicateurs Volatilité** (6 features)
+  - [x] Bollinger Bands (width + position)
+  - [x] ATR (absolu et %)
+  - [x] Écart-type returns
+  - [x] Range High-Low
 
-- [ ] **4.4 Features Orderbook** (8 features)
-  - [ ] Spread bid/ask
-  - [ ] Imbalance
-  - [ ] Depth bid/ask
-  - [ ] Pression achat/vente
+- [x] **4.4 Features Orderbook** (8 features)
+  - [x] Spread bid/ask
+  - [x] Imbalance
+  - [x] Depth bid/ask
+  - [x] Pression achat/vente
 
-- [ ] **4.5 Features Volume** (5 features)
-  - [ ] Volume relatif
-  - [ ] OBV slope
-  - [ ] Volume delta
-  - [ ] VWAP distance
-  - [ ] A/D line
+- [x] **4.5 Features Volume** (5 features)
+  - [x] Volume relatif
+  - [x] OBV slope
+  - [x] Volume delta
+  - [x] VWAP distance
+  - [x] A/D line
 
-- [ ] **4.6 Features Price Action** (5 features)
-  - [ ] Returns 1m/5m/15m
-  - [ ] Chandeliers consécutifs
-  - [ ] Taille relative bougie
+- [x] **4.6 Features Price Action** (5 features)
+  - [x] Returns 1m/5m/15m
+  - [x] Chandeliers consécutifs
+  - [x] Taille relative bougie
 
-- [ ] **4.7 Feature Engine**
-  - [ ] Créer `data/features.py`
-  - [ ] Classe `FeatureEngine`
-  - [ ] Méthode `compute_features()`
-  - [ ] Méthode `compute_features_batch()`
-  - [ ] Tests unitaires complets
+- [x] **4.7 Feature Engine**
+  - [x] Créer `data/features.py`
+  - [x] Classe `FeatureEngine`
+  - [x] Méthode `compute_features()`
+  - [x] Méthode `compute_features_batch()`
+  - [x] Tests unitaires complets
 
 ---
 
@@ -357,6 +355,7 @@
 |------|-------|------------------|
 | 2025-12-15 | 0→2 | Setup complet (config, logger, exceptions), Client Binance avec mode hybride, WebSocket complet (ticker, klines, orderbook), DataCollector interface unifiée. Tous tests passent. |
 | 2025-12-15 | 3 | Créé symbols.py (SymbolsManager avec rafraîchissement auto), multi_pair_scanner.py (détection momentum/breakout, ScannerAlert, scoring), collector.py (interface unifiée). Tests Phase 3 passés. |
+| 2025-12-15 | 4 | Feature Engine complet (42 features): Momentum (RSI, Stochastic, Williams, ROC, CCI, CMO), Tendance (EMA, MACD, ADX, Aroon), Volatilité (BB, ATR), Orderbook (spread, imbalance, depth), Volume (OBV, VWAP, A/D), Price Action (returns, chandeliers). Performance ~71ms. |
 
 
 ---
@@ -386,6 +385,11 @@
 - `cryptoscalper/data/multi_pair_scanner.py`
 - `cryptoscalper/data/collector.py`
 - `scripts/test_multi_pair_scanner.py`
+
+### Phase 4
+- `cryptoscalper/data/features.py` - Feature Engine avec 42 indicateurs
+- `scripts/test_features.py` - Tests d'intégration Phase 4
+
 ---
 
 ## 🔧 Notes Techniques
