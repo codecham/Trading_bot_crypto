@@ -1,8 +1,8 @@
 # 📊 CryptoScalper AI - Project Tracker
 
-> **Dernière mise à jour:** 2025-01-XX
-> **Phase actuelle:** Phase 0 - Setup
-> **Progression globale:** 0%
+> **Dernière mise à jour:** 2025-12-15
+> **Phase actuelle:** Phase 3 - Scanner Multi-Paires
+> **Progression globale:** ~30%
 
 ---
 
@@ -10,22 +10,23 @@
 
 ```
 📍 ON EN EST OÙ ?
-├── Phase: 0 - Setup Environnement
-├── Tâche en cours: Configuration initiale du projet
-├── Prochaine action: Créer la structure des dossiers
+├── Phase: 3 - Scanner Multi-Paires
+├── Tâche en cours: Créer data/symbols.py et améliorer le scanner
+├── Prochaine action: Implémenter la détection d'opportunités
 └── Bloqueurs: Aucun
 ```
 
 ### 📝 Notes de la dernière session
-- Session initiale - Création du tracker
-- Définition des règles clean code
-- Setup de l'environnement Claude
+- Session du 15 décembre 2025
+- Phases 0, 1, 2 complétées
+- Tous les tests passent
+- Mode hybride ajouté au BinanceClient (données production)
 
 ---
 
 ## 📋 Phases du Projet
 
-### Phase 0: Setup Environnement ⏳
+### Phase 0: Setup Environnement ✅
 > Préparer l'environnement de développement
 
 - [x] **0.1 Structure projet**
@@ -42,12 +43,11 @@
 - [x] **0.3 Logging**
   - [x] Créer `utils/logger.py` avec loguru
   - [x] Définir les formats de log
-  - [x] Créer `utils/exceptions.py`
   - [x] Test du système de logging
 
 ---
 
-### Phase 1: Connexion Binance 🔴
+### Phase 1: Connexion Binance ✅
 > Se connecter à Binance et récupérer des données de base
 
 - [x] **1.1 Client Binance**
@@ -64,43 +64,43 @@
 
 ---
 
-### Phase 2: Collecte Temps Réel 🔴
+### Phase 2: Collecte Temps Réel ✅
 > WebSocket pour données live
 
-- [ ] **2.1 WebSocket Manager**
-  - [ ] Créer `data/websocket_manager.py`
-  - [ ] Connexion WebSocket unique
-  - [ ] Gestion reconnexion auto
-  - [ ] Gestion des erreurs
+- [x] **2.1 WebSocket Manager**
+  - [x] Créer `data/websocket_manager.py`
+  - [x] Connexion WebSocket unique
+  - [x] Gestion reconnexion auto
+  - [x] Gestion des erreurs
 
-- [ ] **2.2 Streams de données**
-  - [ ] Stream ticker (prix)
-  - [ ] Stream klines 1m
-  - [ ] Stream orderbook
-  - [ ] Buffer circulaire pour historique court
+- [x] **2.2 Streams de données**
+  - [x] Stream ticker (prix)
+  - [x] Stream klines 1m
+  - [x] Stream orderbook
+  - [x] Buffer circulaire pour historique court
 
-- [ ] **2.3 Data Collector**
-  - [ ] Créer `data/collector.py`
-  - [ ] Interface unifiée pour accéder aux données
-  - [ ] Tests d'intégration
+- [x] **2.3 Data Collector**
+  - [x] Créer `data/collector.py`
+  - [x] Interface unifiée pour accéder aux données
+  - [x] Tests d'intégration
 
 ---
 
-### Phase 3: Scanner Multi-Paires 🔴
+### Phase 3: Scanner Multi-Paires 🟡 EN COURS
 > Surveiller 100+ paires simultanément
 
 - [ ] **3.1 Sélection des paires**
   - [ ] Créer `data/symbols.py`
-  - [ ] Récupérer toutes les paires USDT
-  - [ ] Filtrer par volume minimum
-  - [ ] Exclure stablecoins
+  - [x] Récupérer toutes les paires USDT
+  - [x] Filtrer par volume minimum
+  - [x] Exclure stablecoins
   - [ ] Rafraîchissement périodique
 
 - [ ] **3.2 Scanner Core**
-  - [ ] Créer `data/scanner.py`
-  - [ ] Dataclass `PairState`
+  - [x] Créer `data/scanner.py` (version basique: pair_scanner.py)
+  - [x] Dataclass `PairState`
   - [ ] Dataclass `ScannerAlert`
-  - [ ] Historique prix glissant (5 min)
+  - [x] Historique prix glissant (5 min)
 
 - [ ] **3.3 Détection d'opportunités**
   - [ ] Détection volume spike
@@ -337,7 +337,8 @@
 
 | # | Description | Priorité | Status |
 |---|-------------|----------|--------|
-| - | Aucun pour l'instant | - | - |
+| 1 | pandas-ta incompatible → remplacé par ta | - | ✅ Résolu |
+| 2 | Testnet peu d'activité → mode hybride ajouté | - | ✅ Résolu |
 
 ---
 
@@ -353,15 +354,34 @@
 
 | Date | Phase | Accomplissements |
 |------|-------|------------------|
-| 2025-12-15 | 0 | Setup initial, création tracker |
+| 2025-12-15 | 0→2 | Setup complet (config, logger, exceptions), Client Binance avec mode hybride, WebSocket complet (ticker, klines, orderbook), DataCollector interface unifiée. Tous tests passent. |
 
 ---
 
-## 📝 Notes de Session
+## 📁 Fichiers Créés
 
-### Session 1 - 15 décembre 2024
-- ✅ Phase 0 complétée
-- Remplacement de pandas-ta par ta (problème compatibilité)
-- Tous les tests passent
-- Prochaine étape : Phase 1 - Connexion Binance
+### Phase 0
+- `cryptoscalper/config/settings.py` - Configuration Pydantic
+- `cryptoscalper/config/constants.py` - Constantes du projet
+- `cryptoscalper/utils/logger.py` - Logging avec loguru
+- `cryptoscalper/utils/exceptions.py` - Exceptions personnalisées
+- `scripts/test_setup.py` - Test de configuration
 
+### Phase 1
+- `cryptoscalper/data/binance_client.py` - Client Binance async avec mode hybride
+- `scripts/test_binance_connection.py` - Test connexion Binance
+
+### Phase 2
+- `cryptoscalper/data/websocket_manager.py` - WebSocket avec reconnexion auto
+- `cryptoscalper/data/collector.py` - Interface unifiée REST + WebSocket
+- `cryptoscalper/data/pair_scanner.py` - Scanner basique (à améliorer)
+- `scripts/test_pair_scanner.py` - Test du scanner
+- `scripts/test_phase2.py` - Tests d'intégration Phase 2
+
+---
+
+## 🔧 Notes Techniques
+
+- **pandas-ta** remplacé par **ta** (problème de compatibilité Python)
+- **Mode hybride** : `BinanceClient(use_production_data=True)` par défaut pour avoir des données live (testnet a peu d'activité)
+- **Testnet** : Garder les clés pour les trades, mais données viennent de production
