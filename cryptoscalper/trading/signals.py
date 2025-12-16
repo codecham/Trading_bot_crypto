@@ -111,8 +111,8 @@ class SignalConfig:
     
     def validate(self) -> None:
         """Valide la configuration."""
-        if not 0.5 <= self.min_probability <= 1.0:
-            raise ValueError("min_probability doit être entre 0.5 et 1.0")
+        if not 0.1 <= self.min_probability <= 1.0:
+            raise ValueError("min_probability doit être entre 0.1 et 1.0")
         if not 0.0 <= self.min_confidence <= 1.0:
             raise ValueError("min_confidence doit être entre 0.0 et 1.0")
         if self.validity_seconds <= 0:

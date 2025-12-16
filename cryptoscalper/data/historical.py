@@ -1,18 +1,7 @@
 # cryptoscalper/data/historical.py
 """
 Module de téléchargement des données historiques depuis Binance.
-
-Télécharge les klines (bougies) pour l'entraînement du modèle ML.
-Supporte :
-- Téléchargement par plage de dates
-- Pagination automatique (limite 1000 klines/requête)
-- Cache local (évite re-téléchargement)
-- Sauvegarde CSV et Parquet
-
-Usage:
-    downloader = HistoricalDataDownloader(client)
-    df = await downloader.download("BTCUSDT", days=180)
-    downloader.save_to_parquet(df, "data/BTCUSDT_1m.parquet")
+VERSION OPTIMISÉE - Téléchargement parallèle.
 """
 
 import asyncio
@@ -37,16 +26,13 @@ from cryptoscalper.utils.logger import logger
 # CONSTANTES
 # ============================================
 
-# Intervalle par défaut pour le scalping
 DEFAULT_INTERVAL = KLINE_INTERVAL_1M
-
-# Nombre de jours par défaut (6 mois)
 DEFAULT_DAYS = 180
 
-# Délai entre les requêtes pour éviter le rate limiting
-REQUEST_DELAY_SECONDS = 0.1
+# OPTIMISÉ: Binance permet 1200 req/min = 20/sec
+# On utilise 0.05s = 20 req/sec (safe margin)
+REQUEST_DELAY_SECONDS = 0.05
 
-# Colonnes du DataFrame de sortie
 KLINE_COLUMNS = [
     "open_time",
     "open",
@@ -75,10 +61,9 @@ class DownloadConfig:
     start_date: Optional[datetime] = None
     end_date: Optional[datetime] = None
     output_dir: Path = field(default_factory=lambda: Path(DATA_DIR))
-    save_format: str = "parquet"  # "parquet" ou "csv"
+    save_format: str = "parquet"
     
     def __post_init__(self):
-        """Calcule les dates si non fournies."""
         if self.end_date is None:
             self.end_date = datetime.now()
         if self.start_date is None:
@@ -97,21 +82,18 @@ class DownloadProgress:
     
     @property
     def percent(self) -> float:
-        """Pourcentage de progression."""
         if self.total_expected == 0:
             return 0.0
         return (self.downloaded / self.total_expected) * 100
     
     @property
     def elapsed_seconds(self) -> float:
-        """Temps écoulé."""
         if self.start_time is None:
             return 0.0
         return (datetime.now() - self.start_time).total_seconds()
     
     @property
     def rate_per_second(self) -> float:
-        """Taux de téléchargement (klines/sec)."""
         if self.elapsed_seconds == 0:
             return 0.0
         return self.downloaded / self.elapsed_seconds
@@ -130,7 +112,6 @@ class DownloadResult:
     file_path: Optional[Path] = None
     
     def summary(self) -> str:
-        """Retourne un résumé du téléchargement."""
         return (
             f"{self.symbol}: {self.rows_count:,} lignes "
             f"({self.start_date.date()} → {self.end_date.date()}) "
@@ -145,18 +126,7 @@ class DownloadResult:
 class HistoricalDataDownloader:
     """
     Télécharge les données historiques depuis Binance.
-    
-    Gère la pagination, le rate limiting, et le cache local.
-    
-    Usage:
-        async with BinanceClient() as client:
-            downloader = HistoricalDataDownloader(client._client)
-            
-            # Télécharger 6 mois de données
-            df = await downloader.download("BTCUSDT", days=180)
-            
-            # Sauvegarder
-            downloader.save_to_parquet(df, "data/BTCUSDT.parquet")
+    VERSION OPTIMISÉE avec délai réduit.
     """
     
     def __init__(
@@ -164,19 +134,11 @@ class HistoricalDataDownloader:
         client: AsyncClient,
         config: Optional[DownloadConfig] = None
     ):
-        """
-        Initialise le downloader.
-        
-        Args:
-            client: Client Binance async connecté
-            config: Configuration (optionnel)
-        """
         self._client = client
         self._config = config or DownloadConfig()
         self._progress_callback: Optional[Callable[[DownloadProgress], None]] = None
     
     def on_progress(self, callback: Callable[[DownloadProgress], None]) -> None:
-        """Enregistre un callback pour la progression."""
         self._progress_callback = callback
     
     async def download(
@@ -187,46 +149,30 @@ class HistoricalDataDownloader:
         start_date: Optional[datetime] = None,
         end_date: Optional[datetime] = None
     ) -> pd.DataFrame:
-        """
-        Télécharge les données historiques pour un symbole.
-        
-        Args:
-            symbol: Paire de trading (ex: "BTCUSDT")
-            interval: Intervalle des klines (défaut: 1m)
-            days: Nombre de jours à télécharger
-            start_date: Date de début (prioritaire sur days)
-            end_date: Date de fin (défaut: maintenant)
-            
-        Returns:
-            DataFrame avec les colonnes OHLCV
-        """
-        # Configurer les paramètres
+        """Télécharge les données historiques pour un symbole."""
         interval = interval or self._config.interval
         end_date = end_date or datetime.now()
         
         if start_date is not None:
-            pass  # Utiliser start_date fourni
+            pass
         elif days is not None:
             start_date = end_date - timedelta(days=days)
         else:
             start_date = end_date - timedelta(days=self._config.days)
         
-        # Calculer le nombre estimé de klines
         total_minutes = int((end_date - start_date).total_seconds() / 60)
         
         logger.info(
-            f"📥 Téléchargement {symbol} ({interval}) : "
+            f"📥 {symbol} ({interval}): "
             f"{start_date.date()} → {end_date.date()} (~{total_minutes:,} klines)"
         )
         
-        # Initialiser la progression
         progress = DownloadProgress(
             symbol=symbol,
             total_expected=total_minutes,
             start_time=datetime.now()
         )
         
-        # Télécharger par lots
         all_klines = await self._download_in_batches(
             symbol=symbol,
             interval=interval,
@@ -235,12 +181,12 @@ class HistoricalDataDownloader:
             progress=progress
         )
         
-        # Convertir en DataFrame
         df = self._klines_to_dataframe(all_klines)
         
         logger.info(
-            f"✅ {symbol}: {len(df):,} klines téléchargées "
-            f"en {progress.elapsed_seconds:.1f}s"
+            f"✅ {symbol}: {len(df):,} klines "
+            f"en {progress.elapsed_seconds:.1f}s "
+            f"({progress.rate_per_second:.0f}/s)"
         )
         
         return df
@@ -273,20 +219,20 @@ class HistoricalDataDownloader:
                 all_klines.extend(klines)
                 progress.downloaded = len(all_klines)
                 
-                # Notifier la progression
                 self._notify_progress(progress)
                 
-                # Avancer au prochain lot
-                current_start = klines[-1][6] + 1  # close_time + 1ms
+                current_start = klines[-1][6] + 1
                 
-                # Rate limiting
+                # Rate limiting optimisé
                 await asyncio.sleep(REQUEST_DELAY_SECONDS)
                 
             except Exception as e:
                 error_msg = f"Erreur batch {symbol}: {e}"
                 progress.errors.append(error_msg)
                 logger.error(error_msg)
-                break
+                # Retry avec délai plus long
+                await asyncio.sleep(1.0)
+                continue
         
         return all_klines
     
@@ -311,28 +257,19 @@ class HistoricalDataDownloader:
         if not klines:
             return pd.DataFrame(columns=KLINE_COLUMNS)
         
-        # Créer le DataFrame
         df = pd.DataFrame(klines, columns=KLINE_COLUMNS + ["ignore"])
         df = df.drop(columns=["ignore"])
-        
-        # Convertir les types
         df = self._convert_dtypes(df)
-        
-        # Supprimer les doublons
         df = df.drop_duplicates(subset=["open_time"])
-        
-        # Trier par temps
         df = df.sort_values("open_time").reset_index(drop=True)
         
         return df
     
     def _convert_dtypes(self, df: pd.DataFrame) -> pd.DataFrame:
         """Convertit les types de colonnes."""
-        # Timestamps en datetime
         df["open_time"] = pd.to_datetime(df["open_time"], unit="ms")
         df["close_time"] = pd.to_datetime(df["close_time"], unit="ms")
         
-        # Prix et volumes en float
         float_columns = [
             "open", "high", "low", "close", "volume",
             "quote_volume", "taker_buy_volume", "taker_buy_quote_volume"
@@ -340,25 +277,20 @@ class HistoricalDataDownloader:
         for col in float_columns:
             df[col] = df[col].astype(float)
         
-        # Trades count en int
         df["trades_count"] = df["trades_count"].astype(int)
         
         return df
     
     def _notify_progress(self, progress: DownloadProgress) -> None:
-        """Notifie la progression via callback et log."""
+        """Notifie la progression."""
         if progress.downloaded % 10000 == 0 or progress.downloaded == progress.total_expected:
             logger.debug(
                 f"  {progress.symbol}: {progress.downloaded:,}/{progress.total_expected:,} "
-                f"({progress.percent:.1f}%) - {progress.rate_per_second:.0f} klines/s"
+                f"({progress.percent:.1f}%)"
             )
         
         if self._progress_callback:
             self._progress_callback(progress)
-    
-    # =========================================
-    # SAUVEGARDE
-    # =========================================
     
     def save_to_parquet(
         self,
@@ -366,17 +298,7 @@ class HistoricalDataDownloader:
         path: Optional[Path] = None,
         symbol: str = "data"
     ) -> Path:
-        """
-        Sauvegarde le DataFrame en Parquet.
-        
-        Args:
-            df: DataFrame à sauvegarder
-            path: Chemin complet (optionnel)
-            symbol: Nom du symbole (pour générer le chemin)
-            
-        Returns:
-            Chemin du fichier sauvegardé
-        """
+        """Sauvegarde le DataFrame en Parquet."""
         if path is None:
             path = self._config.output_dir / f"{symbol}_1m.parquet"
         
@@ -406,10 +328,6 @@ class HistoricalDataDownloader:
         
         return path
     
-    # =========================================
-    # CHARGEMENT
-    # =========================================
-    
     @staticmethod
     def load_from_parquet(path: Path) -> pd.DataFrame:
         """Charge un DataFrame depuis un fichier Parquet."""
@@ -426,19 +344,13 @@ class HistoricalDataDownloader:
 
 
 # ============================================
-# MULTI-SYMBOL DOWNLOADER
+# MULTI-SYMBOL DOWNLOADER (OPTIMISÉ)
 # ============================================
 
 class MultiSymbolDownloader:
     """
     Télécharge les données pour plusieurs symboles.
-    
-    Usage:
-        downloader = MultiSymbolDownloader(client)
-        results = await downloader.download_all(
-            symbols=["BTCUSDT", "ETHUSDT", "BNBUSDT"],
-            days=180
-        )
+    VERSION OPTIMISÉE avec téléchargement parallèle.
     """
     
     def __init__(
@@ -446,43 +358,51 @@ class MultiSymbolDownloader:
         client: AsyncClient,
         config: Optional[DownloadConfig] = None
     ):
-        """Initialise le downloader multi-symboles."""
         self._client = client
         self._config = config or DownloadConfig()
-        self._downloader = HistoricalDataDownloader(client, config)
     
     async def download_all(
         self,
         symbols: List[str],
         days: int = DEFAULT_DAYS,
         save: bool = True,
-        parallel: int = 1
+        parallel: int = 3  # OPTIMISÉ: 3 téléchargements en parallèle
     ) -> Dict[str, DownloadResult]:
         """
-        Télécharge les données pour tous les symboles.
+        Télécharge les données pour tous les symboles EN PARALLÈLE.
         
         Args:
             symbols: Liste des symboles
             days: Nombre de jours
             save: Sauvegarder automatiquement
-            parallel: Nombre de téléchargements parallèles (1 = séquentiel)
+            parallel: Nombre de téléchargements parallèles (défaut: 3)
             
         Returns:
             Dict {symbol: DownloadResult}
         """
         logger.info(f"📦 Téléchargement de {len(symbols)} symboles ({days} jours)...")
+        logger.info(f"   Mode: {parallel} téléchargements parallèles")
         
-        results = {}
         start_total = datetime.now()
         
-        for i, symbol in enumerate(symbols, 1):
-            logger.info(f"\n[{i}/{len(symbols)}] {symbol}")
-            
-            try:
-                result = await self._download_single(symbol, days, save)
-                results[symbol] = result
-            except Exception as e:
-                logger.error(f"❌ Erreur {symbol}: {e}")
+        # Sémaphore pour limiter les téléchargements parallèles
+        semaphore = asyncio.Semaphore(parallel)
+        
+        async def download_with_semaphore(symbol: str) -> tuple:
+            async with semaphore:
+                try:
+                    result = await self._download_single(symbol, days, save)
+                    return symbol, result
+                except Exception as e:
+                    logger.error(f"❌ Erreur {symbol}: {e}")
+                    return symbol, None
+        
+        # Lancer tous les téléchargements en parallèle
+        tasks = [download_with_semaphore(symbol) for symbol in symbols]
+        completed = await asyncio.gather(*tasks)
+        
+        # Collecter les résultats
+        results = {symbol: result for symbol, result in completed if result is not None}
         
         # Résumé
         total_duration = (datetime.now() - start_total).total_seconds()
@@ -491,6 +411,7 @@ class MultiSymbolDownloader:
         logger.info(f"\n{'='*50}")
         logger.info(f"📊 RÉSUMÉ: {len(results)}/{len(symbols)} symboles téléchargés")
         logger.info(f"   Total: {total_rows:,} lignes en {total_duration:.1f}s")
+        logger.info(f"   Vitesse: {total_rows/total_duration:,.0f} lignes/sec")
         
         return results
     
@@ -505,11 +426,12 @@ class MultiSymbolDownloader:
         end_date = datetime.now()
         start_date = end_date - timedelta(days=days)
         
-        df = await self._downloader.download(symbol, days=days)
+        downloader = HistoricalDataDownloader(self._client, self._config)
+        df = await downloader.download(symbol, days=days)
         
         file_path = None
         if save and len(df) > 0:
-            file_path = self._downloader.save_to_parquet(df, symbol=symbol)
+            file_path = downloader.save_to_parquet(df, symbol=symbol)
         
         return DownloadResult(
             symbol=symbol,
@@ -532,18 +454,7 @@ async def download_historical_data(
     days: int = 180,
     save: bool = True
 ) -> pd.DataFrame:
-    """
-    Fonction utilitaire pour télécharger rapidement des données.
-    
-    Args:
-        client: Client Binance
-        symbol: Symbole (ex: "BTCUSDT")
-        days: Nombre de jours
-        save: Sauvegarder en parquet
-        
-    Returns:
-        DataFrame avec les données OHLCV
-    """
+    """Fonction utilitaire pour télécharger rapidement des données."""
     downloader = HistoricalDataDownloader(client)
     df = await downloader.download(symbol, days=days)
     

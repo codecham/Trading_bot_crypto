@@ -560,7 +560,7 @@ class DatasetBuilder:
         df['roc_10'] = ta.momentum.roc(df['close'], window=10)
         
         # Momentum simple
-        df['momentum_5'] = df['close'].diff(5)
+        df['momentum_5'] = df['close'].diff(5) / df['close'] * 100
         
         df['cci'] = ta.trend.cci(df['high'], df['low'], df['close'], window=20)
         
@@ -604,20 +604,25 @@ class DatasetBuilder:
         # === VOLUME ===
         df['volume_relative'] = df['volume'] / df['volume'].rolling(20).mean()
         
-        # OBV slope
+        # OBV slope NORMALISÉ
         obv = ta.volume.on_balance_volume(df['close'], df['volume'])
-        df['obv_slope'] = obv.diff(5) / 5
+        obv_mean = obv.abs().rolling(20).mean()
+        df['obv_slope'] = obv.diff(5) / obv_mean.replace(0, np.nan)
         
-        # Volume delta (approximation)
-        df['volume_delta'] = df['volume'] * np.sign(df['close'].diff())
+        # Volume delta NORMALISÉ
+        volume_sma = df['volume'].rolling(20).mean()
+        volume_delta_raw = df['volume'] * np.sign(df['close'].diff())
+        df['volume_delta'] = volume_delta_raw / volume_sma.replace(0, np.nan)
         
-        # VWAP distance
+        # VWAP distance (déjà normalisé)
         vwap = (df['close'] * df['volume']).rolling(20).sum() / df['volume'].rolling(20).sum()
         df['vwap_distance'] = (df['close'] - vwap) / vwap * 100
         
-        # A/D Line
-        df['ad_line'] = ta.volume.acc_dist_index(df['high'], df['low'], df['close'], df['volume'])
-        df['ad_line'] = df['ad_line'].diff(5)  # Variation sur 5 périodes
+        # A/D Line NORMALISÉ
+        ad_line = ta.volume.acc_dist_index(df['high'], df['low'], df['close'], df['volume'])
+        ad_mean = ad_line.abs().rolling(20).mean()
+        df['ad_line'] = ad_line.diff(5) / ad_mean.replace(0, np.nan)
+
         
         # === PRICE ACTION ===
         df['returns_1m'] = df['close'].pct_change(1) * 100
