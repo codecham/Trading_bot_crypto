@@ -1,8 +1,8 @@
 {
-  "trained_at": "2025-12-15T14:14:31.592478",
-  "training_time_seconds": 3.5978939533233643,
-  "n_train_samples": 7021,
-  "n_val_samples": 1504,
+  "trained_at": "2025-12-16T07:27:12.716376",
+  "training_time_seconds": 29.047966241836548,
+  "n_train_samples": 453743,
+  "n_val_samples": 97231,
   "n_features": 42,
   "feature_names": [
     "rsi_14",
@@ -51,35 +51,35 @@
   "best_iteration": 200,
   "is_calibrated": true,
   "val_metrics": {
-    "accuracy": 0.9960106382978723,
+    "accuracy": 0.9297137744135101,
     "precision": 0.0,
     "recall": 0.0,
     "f1": 0.0,
-    "roc_auc": 0.8839563862928348,
+    "roc_auc": 0.7503533991698679,
     "confusion_matrix": [
       [
-        1498,
+        90397,
         0
       ],
       [
-        6,
+        6834,
         0
       ]
     ]
   },
   "test_metrics": {
-    "accuracy": 0.9654485049833887,
+    "accuracy": 0.9487611975604489,
     "precision": 0.0,
     "recall": 0.0,
     "f1": 0.0,
-    "roc_auc": 0.7581793636508021,
+    "roc_auc": 0.7562056681378462,
     "confusion_matrix": [
       [
-        1453,
+        92249,
         0
       ],
       [
-        52,
+        4982,
         0
       ]
     ]

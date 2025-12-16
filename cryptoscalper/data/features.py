@@ -23,7 +23,7 @@ import numpy as np
 # Librairie ta pour les indicateurs techniques
 import ta
 from ta.momentum import RSIIndicator, StochasticOscillator, WilliamsRIndicator, ROCIndicator
-from ta.trend import EMAIndicator, MACD, ADXIndicator, AroonIndicator
+from ta.trend import EMAIndicator, MACD, ADXIndicator, AroonIndicator, CCIIndicator
 from ta.volatility import BollingerBands, AverageTrueRange
 from ta.volume import OnBalanceVolumeIndicator, AccDistIndexIndicator
 
@@ -287,11 +287,12 @@ class FeatureEngine:
     # =========================================
     
     def _compute_momentum_features(self, df: pd.DataFrame) -> Dict[str, float]:
-        """Calcule les 10 features de momentum."""
+        """Calcule les 10 features de momentum (normalisées)."""
         features = {}
         close = df["close"]
         high = df["high"]
         low = df["low"]
+        current_price = close.iloc[-1]
         
         # RSI 14 périodes
         features["rsi_14"] = self._safe_last(
@@ -317,21 +318,21 @@ class FeatureEngine:
             WilliamsRIndicator(high, low, close, lbp=14).williams_r()
         )
         
-        # ROC (Rate of Change)
-        features["roc_5"] = self._safe_last(
-            ROCIndicator(close, window=self.config.roc_short).roc()
-        )
-        features["roc_10"] = self._safe_last(
-            ROCIndicator(close, window=self.config.roc_long).roc()
-        )
+        # ROC (déjà en pourcentage)
+        features["roc_5"] = self._safe_last(ROCIndicator(close, window=5).roc())
+        features["roc_10"] = self._safe_last(ROCIndicator(close, window=10).roc())
         
-        # Momentum simple (variation sur 5 périodes)
-        features["momentum_5"] = self._calculate_momentum(close, 5)
+        # Momentum normalisé par le prix
+        if len(close) > 5:
+            momentum_raw = close.iloc[-1] - close.iloc[-6]
+            features["momentum_5"] = (momentum_raw / current_price) * 100
+        else:
+            features["momentum_5"] = np.nan
         
-        # CCI (Commodity Channel Index)
-        features["cci"] = self._calculate_cci(high, low, close, 20)
+        # CCI (déjà normalisé)
+        features["cci"] = self._safe_last(CCIIndicator(high, low, close, window=20).cci())
         
-        # CMO (Chande Momentum Oscillator)
+        # CMO
         features["cmo"] = self._calculate_cmo(close, 14)
         
         return features
@@ -369,7 +370,7 @@ class FeatureEngine:
     # =========================================
     
     def _compute_trend_features(self, df: pd.DataFrame) -> Dict[str, float]:
-        """Calcule les 8 features de tendance."""
+        """Calcule les 8 features de tendance (normalisées)."""
         features = {}
         close = df["close"]
         high = df["high"]
@@ -385,22 +386,22 @@ class FeatureEngine:
         features["ema_10_ratio"] = self._safe_ratio(current_price, self._safe_last(ema_10))
         features["ema_20_ratio"] = self._safe_ratio(current_price, self._safe_last(ema_20))
         
-        # MACD
+        # MACD normalisé par le prix
         macd = MACD(
             close,
             window_fast=self.config.macd_fast,
             window_slow=self.config.macd_slow,
             window_sign=self.config.macd_signal
         )
-        features["macd_line"] = self._safe_last(macd.macd())
-        features["macd_signal"] = self._safe_last(macd.macd_signal())
-        features["macd_histogram"] = self._safe_last(macd.macd_diff())
+        features["macd_line"] = self._safe_last(macd.macd()) / current_price * 100
+        features["macd_signal"] = self._safe_last(macd.macd_signal()) / current_price * 100
+        features["macd_histogram"] = self._safe_last(macd.macd_diff()) / current_price * 100
         
-        # ADX (Average Directional Index)
+        # ADX (Average Directional Index) - déjà en %
         adx = ADXIndicator(high, low, close, window=14)
         features["adx"] = self._safe_last(adx.adx())
         
-        # Aroon Oscillator
+        # Aroon Oscillator - déjà en %
         aroon = AroonIndicator(high, low, window=25)
         aroon_up = self._safe_last(aroon.aroon_up())
         aroon_down = self._safe_last(aroon.aroon_down())
@@ -413,7 +414,7 @@ class FeatureEngine:
     # =========================================
     
     def _compute_volatility_features(self, df: pd.DataFrame) -> Dict[str, float]:
-        """Calcule les 6 features de volatilité."""
+        """Calcule les 6 features de volatilité (normalisées)."""
         features = {}
         close = df["close"]
         high = df["high"]
@@ -436,19 +437,19 @@ class FeatureEngine:
         # BB Position (0 = bande basse, 1 = bande haute)
         features["bb_position"] = self._calculate_bb_position(current_price, bb_low, bb_high)
         
-        # ATR
+        # ATR normalisé par le prix
         atr = AverageTrueRange(high, low, close, window=self.config.atr_period)
         atr_value = self._safe_last(atr.average_true_range())
-        features["atr"] = atr_value
-        features["atr_percent"] = self._safe_ratio(atr_value, current_price) * 100
+        features["atr"] = (atr_value / current_price) * 100  # Normalisé
+        features["atr_percent"] = features["atr"]  # Identique
         
         # Écart-type des returns
         returns = close.pct_change()
-        features["returns_std"] = returns.rolling(window=20).std().iloc[-1] if len(returns) >= 20 else np.nan
+        features["returns_std"] = returns.rolling(window=20).std().iloc[-1]
         
-        # Range High-Low moyen
+        # Range moyen High-Low (normalisé)
         hl_range = (high - low) / close
-        features["hl_range_avg"] = hl_range.rolling(window=20).mean().iloc[-1] if len(hl_range) >= 20 else np.nan
+        features["hl_range_avg"] = hl_range.rolling(window=20).mean().iloc[-1]
         
         return features
     
@@ -574,7 +575,7 @@ class FeatureEngine:
     # =========================================
     
     def _compute_volume_features(self, df: pd.DataFrame) -> Dict[str, float]:
-        """Calcule les 5 features de volume."""
+        """Calcule les 5 features de volume (normalisées)."""
         features = {}
         close = df["close"]
         high = df["high"]
@@ -585,19 +586,24 @@ class FeatureEngine:
         volume_sma = volume.rolling(window=20).mean()
         features["volume_relative"] = self._safe_ratio(volume.iloc[-1], volume_sma.iloc[-1])
         
-        # OBV slope (pente de l'OBV sur 5 périodes)
+        # OBV slope normalisé
         obv = OnBalanceVolumeIndicator(close, volume).on_balance_volume()
-        features["obv_slope"] = self._calculate_slope(obv, 5)
+        obv_mean = obv.abs().rolling(20).mean().iloc[-1]
+        obv_diff = obv.diff(5).iloc[-1]
+        features["obv_slope"] = obv_diff / obv_mean if obv_mean != 0 else 0
         
-        # Volume delta (approximation buy vs sell)
-        features["volume_delta"] = self._calculate_volume_delta(df)
+        # Volume delta normalisé
+        volume_delta_raw = volume.iloc[-1] * np.sign(close.diff().iloc[-1])
+        features["volume_delta"] = volume_delta_raw / volume_sma.iloc[-1] if volume_sma.iloc[-1] != 0 else 0
         
         # VWAP distance
         features["vwap_distance"] = self._calculate_vwap_distance(df)
         
-        # A/D Line (Accumulation/Distribution)
+        # A/D Line normalisé
         ad = AccDistIndexIndicator(high, low, close, volume).acc_dist_index()
-        features["ad_line"] = self._calculate_slope(ad, 5)
+        ad_mean = ad.abs().rolling(20).mean().iloc[-1]
+        ad_diff = ad.diff(5).iloc[-1]
+        features["ad_line"] = ad_diff / ad_mean if ad_mean != 0 else 0
         
         return features
     

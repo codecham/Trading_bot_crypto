@@ -278,7 +278,7 @@ def run_backtest_with_model(
     
     logger.info(f"🤖 Chargement du modèle: {model_path}")
     
-    predictor = MLPredictor.load(model_path)
+    predictor = MLPredictor.from_file(model_path)
     feature_engine = FeatureEngine()
     
     logger.info("🚀 Démarrage du backtest avec modèle ML...")

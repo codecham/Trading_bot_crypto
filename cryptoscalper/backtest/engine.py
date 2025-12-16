@@ -651,7 +651,7 @@ class BacktestEngine:
                     )
                     
                     # Obtenir la prédiction
-                    prediction = predictor.predict_single(feature_set.features)
+                    prediction = predictor.predict_from_dict(feature_set.features)
                     
                     # Vérifier les seuils
                     if (prediction.probability_up >= self._config.min_probability and

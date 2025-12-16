@@ -65,16 +65,19 @@ REQUIRED_COLUMNS = ["open", "high", "low", "close", "volume"]
 
 @dataclass
 class LabelConfig:
-    """Configuration pour la création des labels."""
+    """Configuration pour la création des labels basés sur SL/TP."""
     
-    # Horizon de prédiction (en minutes)
-    horizon_minutes: int = PREDICTION_HORIZON_MINUTES  # 3 min par défaut
+    # Horizon maximum de prédiction (en minutes) - timeout
+    horizon_minutes: int = PREDICTION_HORIZON_MINUTES  # 15 min recommandé
     
-    # Seuil de hausse pour label = 1
-    threshold_percent: float = MIN_PRICE_CHANGE_FOR_LABEL  # 0.2% par défaut
+    # Seuil de Take Profit (ex: 0.005 = +0.5%)
+    threshold_percent: float = MIN_PRICE_CHANGE_FOR_LABEL  # TP
     
-    # Utiliser le high futur (True) ou le close futur (False)
-    use_future_high: bool = True
+    # Seuil de Stop Loss (ex: 0.003 = -0.3%)
+    stop_loss_percent: float = 0.003  # SL
+    
+    # Mode de labeling: 'sltp' (nouveau) ou 'legacy' (ancien)
+    mode: str = 'sltp'
 
 
 @dataclass
@@ -475,71 +478,177 @@ class DatasetBuilder:
     
     def _create_labels(self, df: pd.DataFrame) -> pd.DataFrame:
         """
-        Crée les labels de classification.
+        Crée les labels SL/TP de manière VECTORISÉE (rapide).
         
-        Label = 1 si le prix monte de ≥threshold% dans les N prochaines minutes.
+        Label = 1 si TP atteint avant SL dans les N prochaines minutes.
         """
+        import numpy as np
+        
         df = df.copy()
         
         horizon = self._label_config.horizon_minutes
-        threshold = self._label_config.threshold_percent
+        tp_threshold = self._label_config.threshold_percent
+        sl_threshold = self._label_config.stop_loss_percent
         
-        if self._label_config.use_future_high:
-            # Utiliser le high maximum sur la période
-            future_max = df["high"].rolling(window=horizon, min_periods=1).max().shift(-horizon)
-        else:
-            # Utiliser le close
-            future_max = df["close"].shift(-horizon)
+        closes = df["close"].values
+        highs = df["high"].values
+        lows = df["low"].values
+        n = len(df)
         
-        current_price = df["close"]
+        # Pré-allouer les arrays
+        labels = np.zeros(n, dtype=np.int32)
+        future_returns = np.zeros(n, dtype=np.float64)
         
-        # Calculer le rendement
-        future_return = (future_max - current_price) / current_price
+        # Pour chaque bougie future (1 à horizon), calculer si TP/SL atteint
+        tp_reached_at = np.full(n, np.inf)  # Quand le TP est atteint
+        sl_reached_at = np.full(n, np.inf)  # Quand le SL est atteint
         
-        # Créer le label
-        df["label"] = (future_return >= threshold).astype(int)
-        df["future_return"] = future_return
+        for j in range(1, horizon + 1):
+            # Indices valides (pas de débordement)
+            valid = np.arange(n - j)
+            future_idx = valid + j
+            
+            # Prix d'entrée et seuils
+            entry_prices = closes[valid]
+            tp_prices = entry_prices * (1 + tp_threshold)
+            sl_prices = entry_prices * (1 - sl_threshold)
+            
+            # High et Low futurs
+            future_highs = highs[future_idx]
+            future_lows = lows[future_idx]
+            
+            # TP atteint à cette bougie ?
+            tp_hit = (future_highs >= tp_prices) & (tp_reached_at[valid] == np.inf)
+            tp_reached_at[valid[tp_hit]] = j
+            
+            # SL atteint à cette bougie ?
+            sl_hit = (future_lows <= sl_prices) & (sl_reached_at[valid] == np.inf)
+            sl_reached_at[valid[sl_hit]] = j
+            
+            # Meilleur return
+            current_returns = (future_highs - entry_prices) / entry_prices
+            future_returns[valid] = np.maximum(future_returns[valid], current_returns)
+        
+        # Label = 1 si TP atteint AVANT SL (ou SL jamais atteint)
+        labels = (tp_reached_at < sl_reached_at).astype(np.int32)
+        
+        df["label"] = labels
+        df["future_return"] = future_returns
         
         return df
+
     
     def _compute_all_features(self, df: pd.DataFrame) -> pd.DataFrame:
-        """Calcule toutes les features pour chaque ligne."""
-        logger.debug("Calcul des features...")
+        """Calcule toutes les features de manière VECTORISÉE (rapide)."""
+        import ta
+        import numpy as np
         
-        # Préparer le DataFrame pour le calcul par fenêtre glissante
-        feature_names = get_feature_names()
+        logger.debug("Calcul des features (vectorisé)...")
         
-        # Initialiser les colonnes de features
-        for name in feature_names:
-            df[name] = np.nan
+        df = df.copy()
         
-        # Calculer les features pour chaque fenêtre
-        window_size = MIN_ROWS_FOR_FEATURES
+        # === MOMENTUM ===
+        df['rsi_14'] = ta.momentum.rsi(df['close'], window=14)
+        df['rsi_7'] = ta.momentum.rsi(df['close'], window=7)
         
-        for i in range(window_size, len(df)):
-            # Extraire la fenêtre
-            window_df = df.iloc[i - window_size:i + 1].copy()
-            window_df = window_df.reset_index(drop=True)
-            
-            # Calculer les features
-            try:
-                feature_set = self._feature_engine.compute_features(
-                    window_df,
-                    orderbook=None,  # Pas d'orderbook pour données historiques
-                    symbol="HIST"
-                )
-                
-                # Assigner les features à la ligne courante
-                for name, value in feature_set.features.items():
-                    df.iloc[i, df.columns.get_loc(name)] = value
-                    
-            except Exception as e:
-                logger.debug(f"Erreur calcul features ligne {i}: {e}")
-                continue
-            
-            # Log de progression
-            if i % 10000 == 0:
-                logger.debug(f"  Progression: {i:,}/{len(df):,} ({i/len(df)*100:.1f}%)")
+        stoch = ta.momentum.StochasticOscillator(df['high'], df['low'], df['close'], window=14, smooth_window=3)
+        df['stoch_k'] = stoch.stoch()
+        df['stoch_d'] = stoch.stoch_signal()
+        
+        df['williams_r'] = ta.momentum.williams_r(df['high'], df['low'], df['close'], lbp=14)
+        df['roc_5'] = ta.momentum.roc(df['close'], window=5)
+        df['roc_10'] = ta.momentum.roc(df['close'], window=10)
+        
+        # Momentum simple
+        df['momentum_5'] = df['close'].diff(5)
+        
+        df['cci'] = ta.trend.cci(df['high'], df['low'], df['close'], window=20)
+        
+        # CMO (Chande Momentum Oscillator) - calcul manuel
+        delta = df['close'].diff()
+        gain = delta.where(delta > 0, 0).rolling(14).sum()
+        loss = (-delta.where(delta < 0, 0)).rolling(14).sum()
+        df['cmo'] = 100 * (gain - loss) / (gain + loss)
+        
+        # === TREND ===
+        df['ema_5'] = ta.trend.ema_indicator(df['close'], window=5)
+        df['ema_10'] = ta.trend.ema_indicator(df['close'], window=10)
+        df['ema_20'] = ta.trend.ema_indicator(df['close'], window=20)
+        
+        df['ema_5_ratio'] = df['close'] / df['ema_5']
+        df['ema_10_ratio'] = df['close'] / df['ema_10']
+        df['ema_20_ratio'] = df['close'] / df['ema_20']
+        
+        macd = ta.trend.MACD(df['close'], window_slow=26, window_fast=12, window_sign=9)
+        df['macd_line'] = macd.macd() / df['close'] * 100
+        df['macd_signal'] = macd.macd_signal() / df['close'] * 100
+        df['macd_histogram'] = macd.macd_diff() / df['close'] * 100
+        
+        df['adx'] = ta.trend.adx(df['high'], df['low'], df['close'], window=14)
+        
+        aroon = ta.trend.AroonIndicator(df['high'], df['low'], window=25)
+        df['aroon_oscillator'] = aroon.aroon_indicator()
+        
+        # === VOLATILITY ===
+        bb = ta.volatility.BollingerBands(df['close'], window=20, window_dev=2)
+        df['bb_width'] = (bb.bollinger_hband() - bb.bollinger_lband()) / bb.bollinger_mavg()
+        df['bb_position'] = (df['close'] - bb.bollinger_lband()) / (bb.bollinger_hband() - bb.bollinger_lband()) - 0.5
+        
+        atr_raw = ta.volatility.average_true_range(df['high'], df['low'], df['close'], window=14)
+        df['atr'] = atr_raw / df['close'] * 100  # Normalisé
+        df['atr_percent'] = df['atr']  # Identique
+        
+        df['returns_std'] = df['close'].pct_change().rolling(20).std()
+        df['hl_range_avg'] = ((df['high'] - df['low']) / df['close']).rolling(20).mean()
+        
+        # === VOLUME ===
+        df['volume_relative'] = df['volume'] / df['volume'].rolling(20).mean()
+        
+        # OBV slope
+        obv = ta.volume.on_balance_volume(df['close'], df['volume'])
+        df['obv_slope'] = obv.diff(5) / 5
+        
+        # Volume delta (approximation)
+        df['volume_delta'] = df['volume'] * np.sign(df['close'].diff())
+        
+        # VWAP distance
+        vwap = (df['close'] * df['volume']).rolling(20).sum() / df['volume'].rolling(20).sum()
+        df['vwap_distance'] = (df['close'] - vwap) / vwap * 100
+        
+        # A/D Line
+        df['ad_line'] = ta.volume.acc_dist_index(df['high'], df['low'], df['close'], df['volume'])
+        df['ad_line'] = df['ad_line'].diff(5)  # Variation sur 5 périodes
+        
+        # === PRICE ACTION ===
+        df['returns_1m'] = df['close'].pct_change(1) * 100
+        df['returns_5m'] = df['close'].pct_change(5) * 100
+        df['returns_15m'] = df['close'].pct_change(15) * 100
+        
+        # Bougies consécutives vertes
+        is_green = (df['close'] > df['open']).astype(int)
+        df['consecutive_green'] = is_green.groupby((is_green != is_green.shift()).cumsum()).cumsum() * is_green
+        
+        # Ratio corps/mèche
+        body = abs(df['close'] - df['open'])
+        total_range = df['high'] - df['low']
+        df['candle_body_ratio'] = body / total_range.replace(0, np.nan)
+        
+        # === ORDERBOOK (placeholders pour données historiques) ===
+        df['spread_percent'] = 0.0
+        df['orderbook_imbalance'] = 0.0
+        df['bid_depth'] = 0.0
+        df['ask_depth'] = 0.0
+        df['depth_ratio'] = 0.0
+        df['bid_pressure'] = 0.0
+        df['ask_pressure'] = 0.0
+        df['midprice_distance'] = 0.0
+        
+        # Supprimer les colonnes temporaires
+        for col in ['ema_5', 'ema_10', 'ema_20']:
+            if col in df.columns:
+                df.drop(columns=[col], inplace=True)
+        
+        logger.debug(f"✅ Features calculées: {len(df):,} lignes")
         
         return df
     
