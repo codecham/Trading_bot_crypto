@@ -55,9 +55,10 @@ DEFAULT_POSITION_SIZE_PCT = 0.20      # 20% du capital
 # Configuration
 DEFAULT_CAPITAL = 25.0
 DEFAULT_SYMBOLS = ["BTCUSDT", "ETHUSDT", "SOLUSDT", "XRPUSDT", "DOGEUSDT"]
-DEFAULT_MODEL_PATH = "models/saved/swing_final_model.joblib"
+DEFAULT_MODEL_PATH = "models/saved/swing_50pairs_model.joblib"
 DEFAULT_SCAN_INTERVAL = 60      # 1 minute
-DEFAULT_DATA_DIR = "data_cache"
+DEFAULT_DATA_DIR = "data_cache_50"
+DEFAULT_PAIRS_FILE = "config/top_50_pairs.txt"
 
 # Frais Binance (aller-retour)
 TRADING_FEES_PCT = 0.002        # 0.2%
@@ -341,7 +342,13 @@ class PaperTrader:
     
     def _log_config(self) -> None:
         """Affiche la configuration."""
-        logger.info(f"   Symboles: {', '.join(self._config.symbols)}")
+        n_symbols = len(self._config.symbols)
+        if n_symbols <= 10:
+            logger.info(f"   Symboles: {', '.join(self._config.symbols)}")
+        else:
+            preview = ', '.join(self._config.symbols[:5])
+            logger.info(f"   Symboles: {preview}... (+{n_symbols - 5} autres)")
+        logger.info(f"   Total paires: {n_symbols}")
         logger.info(f"   Capital: {self._config.capital:.2f} USDT")
         logger.info(f"   Seuil proba: {self._config.probability_threshold:.0%}")
         logger.info(f"   Position size: {self._config.position_size_pct:.0%}")
@@ -622,10 +629,10 @@ class PaperTrader:
         uptime = (datetime.now() - self._start_time).total_seconds() / 60
         
         logger.info("-" * 50)
-        logger.info(f"📊 Status | Uptime: {uptime:.0f}min")
+        logger.info(f"📊 Status | Uptime: {uptime:.0f}min | Paires: {len(self._config.symbols)}")
         logger.info(
             f"   Capital: {self._stats.current_capital:.2f} USDT | "
-            f"PnL: {self._stats.net_pnl:+.2f} USDT"
+            f"PnL: {self._stats.net_pnl:+.2f} USDT ({self._stats.net_pnl/self._config.capital*100:+.1f}%)"
         )
         logger.info(
             f"   Trades: {self._stats.total_trades} | "
@@ -633,12 +640,14 @@ class PaperTrader:
             f"Open: {self.open_positions_count}"
         )
         
-        # Afficher les prix actuels
-        prices_str = " | ".join([
-            f"{s}: {self._price_cache.get(s, 0):.2f}"
-            for s in self._config.symbols[:3]
-        ])
-        logger.info(f"   {prices_str}")
+        # Afficher les positions ouvertes
+        if self._open_trades:
+            for symbol, trade in self._open_trades.items():
+                current = self._price_cache.get(symbol, trade.entry_price)
+                pnl_pct = (current - trade.entry_price) / trade.entry_price * 100
+                emoji = "🟢" if pnl_pct > 0 else "🔴"
+                logger.info(f"   {emoji} {symbol}: {pnl_pct:+.2f}% (ouvert)")
+        
         logger.info("-" * 50)
     
     def _print_final_summary(self) -> None:
@@ -744,8 +753,15 @@ Exemples:
     parser.add_argument(
         "--symbols",
         type=str,
-        default=",".join(DEFAULT_SYMBOLS),
-        help=f"Symboles à scanner (défaut: {','.join(DEFAULT_SYMBOLS)})"
+        default=None,
+        help=f"Symboles à scanner (séparés par virgule)"
+    )
+    
+    parser.add_argument(
+        "--pairs-file",
+        type=str,
+        default=DEFAULT_PAIRS_FILE,
+        help=f"Fichier contenant la liste des paires (défaut: {DEFAULT_PAIRS_FILE})"
     )
     
     parser.add_argument(
@@ -836,10 +852,26 @@ async def main() -> int:
     # Setup logging
     setup_logging(args.verbose)
     
+    # Déterminer les symboles
+    if args.symbols:
+        # Symboles fournis en argument
+        symbols = args.symbols.split(",")
+    else:
+        # Charger depuis le fichier
+        pairs_file = Path(args.pairs_file)
+        if pairs_file.exists():
+            with open(pairs_file) as f:
+                symbols = [line.strip() for line in f if line.strip()]
+            logger.info(f"📂 {len(symbols)} paires chargées depuis {pairs_file}")
+        else:
+            # Fallback sur les symboles par défaut
+            symbols = DEFAULT_SYMBOLS
+            logger.warning(f"⚠️  Fichier {pairs_file} non trouvé, utilisation des symboles par défaut")
+    
     # Créer la config
     config = PaperTradeConfig(
         capital=args.capital,
-        symbols=args.symbols.split(","),
+        symbols=symbols,
         model_path=args.model,
         data_dir=args.data_dir,
         probability_threshold=args.threshold,
